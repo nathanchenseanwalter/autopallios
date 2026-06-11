@@ -6,7 +6,7 @@ check from the test suite — on Day 1, before you understand any internals.
 ## 1. Get the code
 
 ```bash
-git clone https://github.com/opals-ucsd/autopallios
+git clone https://github.com/nathanchenseanwalter/autopallios
 cd autopallios
 ```
 
@@ -54,7 +54,7 @@ python recipes/wound_healing/<your_name>/run_experiment.py
 ```
 
 Everything you produce lives under your folder's `output/`, so you and your teammates
-never collide. See [CONTRIBUTING](https://github.com/opals-ucsd/autopallios/blob/main/CONTRIBUTING.md)
+never collide. See [CONTRIBUTING](https://github.com/nathanchenseanwalter/autopallios/blob/main/CONTRIBUTING.md)
 for the handful of rules that keep the shared repo tidy.
 
 ## Useful commands

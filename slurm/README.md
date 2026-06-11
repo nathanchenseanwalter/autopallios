@@ -14,7 +14,7 @@ This folder holds the Slurm batch template for running `autopallios` at scale on
 
 ```bash
 ssh <user>@login.expanse.sdsc.edu
-git clone https://github.com/opals-ucsd/autopallios && cd autopallios
+git clone https://github.com/nathanchenseanwalter/autopallios && cd autopallios
 # install pixi (https://pixi.sh), then build the GPU environment:
 pixi install -e gpu
 ```

@@ -64,8 +64,8 @@ all = ["autopallios[dl,tracking,docs,dev]"]
 autopallios = "autopallios.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/opals-ucsd/autopallios"
-Documentation = "https://opals-ucsd.github.io/autopallios"
+Homepage = "https://github.com/nathanchenseanwalter/autopallios"
+Documentation = "https://nathanchenseanwalter.github.io/autopallios"
 
 [tool.hatch.version]
 path = "autopallios/__init__.py"   # reads __version__ = "0.1.0"

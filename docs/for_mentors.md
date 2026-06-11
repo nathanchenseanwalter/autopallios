@@ -36,6 +36,6 @@ real data is ready yet.
 
 ## Conventions that keep a cohort sane
 
-See [CONTRIBUTING](https://github.com/opals-ucsd/autopallios/blob/main/CONTRIBUTING.md):
+See [CONTRIBUTING](https://github.com/nathanchenseanwalter/autopallios/blob/main/CONTRIBUTING.md):
 one-way dependencies (`core → modules → recipes`), the `(T,H,W,C)` array contract, lazy
 heavy imports, per-student recipe folders, and a daily commit habit.

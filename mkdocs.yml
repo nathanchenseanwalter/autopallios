@@ -1,6 +1,7 @@
 site_name: autopallios
 site_description: Automated cell segmentation, tracking & analysis — the OPALS @ UC San Diego textbook.
-repo_url: https://github.com/opals-ucsd/autopallios
+site_url: https://nathanchenseanwalter.github.io/autopallios/
+repo_url: https://github.com/nathanchenseanwalter/autopallios
 docs_dir: docs
 
 theme:

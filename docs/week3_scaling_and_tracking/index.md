@@ -12,7 +12,7 @@
 - **What an HPC cluster is** — login vs compute nodes, the file system, modules, the Slurm
   scheduler, GPUs. The ACCESS / SDSC Expanse picture.
 - **Batch processing at scale** — a Slurm *job array* with one task per well. See the
-  template: [`slurm/segment_array.sbatch`](https://github.com/opals-ucsd/autopallios/blob/main/slurm/segment_array.sbatch).
+  template: [`slurm/segment_array.sbatch`](https://github.com/nathanchenseanwalter/autopallios/blob/main/slurm/segment_array.sbatch).
   This is why `debug=False` matters at scale: no per-frame TIFF dumps flooding the parallel
   filesystem.
 - **Tracking cells through time** — link instances frame to frame to measure migration and

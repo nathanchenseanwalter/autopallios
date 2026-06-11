@@ -87,3 +87,4 @@ lint = "ruff check autopallios recipes tests"
 fmt = "ruff format autopallios recipes tests"
 docs = "mkdocs serve"
 docs-build = "mkdocs build --strict"
+gh-deploy = "mkdocs gh-deploy --force"   # build + push the site to the gh-pages branch
