@@ -1,0 +1,102 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "autopallios"
+dynamic = ["version"]
+description = "Automated cell segmentation, tracking & analysis for fluorescence + brightfield microscopy (OPALS @ UC San Diego)."
+readme = "README.md"
+requires-python = ">=3.13"
+license = { text = "MIT" }
+authors = [{ name = "OPALS @ UC San Diego" }]
+keywords = ["microscopy", "cell-segmentation", "cellpose", "tracking", "bioimage", "education"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Image Processing",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Education",
+]
+
+# Core dependencies — these and ONLY these install by default. No torch, no cellpose.
+# The classic-CV baseline and the full mock pipeline run with just this stack.
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "scikit-image>=0.22",
+    "tifffile>=2024.1.1",
+    "imagecodecs>=2024.1.1",   # decodes LZW/compressed TIFFs (the real brightfield samples)
+    "imageio>=2.31",
+    "imageio-ffmpeg>=0.4",     # the ffmpeg plugin that reads the .avi time-lapses
+    "pandas>=2.1",
+    "matplotlib>=3.8",
+    "tqdm>=4.66",
+]
+
+[project.optional-dependencies]
+# Heavy SOTA segmentation backends — opt-in, lazily imported (see core/segmenter.py).
+dl = [
+    "torch>=2.2",
+    "cellpose>=3.1",
+    # CellSAM is GitHub-only (not on PyPI). Add it explicitly when you want that backend:
+    #   pip install "git+https://github.com/vanvalenlab/cellSAM.git"
+]
+# Production tracking engines (the default nearest-centroid tracker needs none of these).
+tracking = [
+    "trackpy>=0.6",
+    "btrack>=0.6",
+]
+docs = [
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.24",
+]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "ruff>=0.4",
+]
+all = ["autopallios[dl,tracking,docs,dev]"]
+
+[project.scripts]
+# THE one-command tool, available as `autopallios run <folder> ...` after install.
+autopallios = "autopallios.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/opals-ucsd/autopallios"
+Documentation = "https://opals-ucsd.github.io/autopallios"
+
+[tool.hatch.version]
+path = "autopallios/__init__.py"   # reads __version__ = "0.1.0"
+
+[tool.hatch.build.targets.wheel]
+packages = ["autopallios"]         # ship only the library; recipes/tests/docs excluded
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = ["docs"]
+
+[tool.ruff.lint]
+# Beginner-friendly but real: pyflakes, pycodestyle, isort, pyupgrade, bugbear, docstrings.
+select = ["E", "F", "I", "UP", "B", "D"]
+ignore = [
+    "D203",  # one-blank-line-before-class (conflicts with D211)
+    "D213",  # multi-line-summary-second-line (conflicts with D212)
+    "E501",  # line length is enforced by the formatter, not the linter
+    "D105",  # missing docstring in magic method (e.g. __len__) — self-explanatory
+    "D107",  # missing docstring in __init__ — Google style documents Args on the class
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+# Recipes and tests are scripts/fixtures — relax docstring requirements there.
+"recipes/**" = ["D"]
+"tests/**" = ["D"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

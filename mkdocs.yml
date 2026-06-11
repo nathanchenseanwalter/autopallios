@@ -1,0 +1,57 @@
+site_name: autopallios
+site_description: Automated cell segmentation, tracking & analysis — the OPALS @ UC San Diego textbook.
+repo_url: https://github.com/opals-ucsd/autopallios
+docs_dir: docs
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.indexes
+    - content.code.copy
+    - toc.integrate
+  palette:
+    - scheme: default
+      primary: teal
+      accent: teal
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: true
+            heading_level: 3
+            members_order: source
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - "Chapter 0 · Setup": chapter0_setup.md
+  - "Week 1 · From microscope to numbers":
+      - Overview: week1_microscope_to_numbers/index.md
+      - The classic-CV baseline: week1_microscope_to_numbers/classic_cv_baseline.md
+  - "Week 2 · Teaching a computer to see cells":
+      - Overview: week2_teaching_to_see/index.md
+  - "Week 3 · Scaling up & tracking":
+      - Overview: week3_scaling_and_tracking/index.md
+  - "Week 4 · Make it usable & tell the story":
+      - Overview: week4_make_it_usable/index.md
+  - "API Reference":
+      - Core engine: reference/core.md
+      - Analytical modules: reference/modules.md
+  - "For Mentors": for_mentors.md
+  - "Role Guides":
+      - Data Lead: roles/data_lead.md
+      - Model Lead: roles/model_lead.md
+      - HPC / Infra Lead: roles/hpc_lead.md
+      - Viz / Comms Lead: roles/viz_comms_lead.md

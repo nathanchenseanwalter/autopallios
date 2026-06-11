@@ -1,0 +1,89 @@
+# pixi.toml — the ONE file that answers "how do I get a working environment?"
+#
+# We keep this separate from pyproject.toml on purpose: pyproject is the build/lint
+# config (dense and intimidating); this file is just the environment story. The two
+# meet at one line — pixi installs the project itself, editable, so
+# `from autopallios.core import segmenter` works from any folder depth.
+#
+# Quick start:
+#   pixi install            # build the default environment (no GPU, no heavy deps)
+#   pixi run demo           # run the wound-healing recipe on synthetic data
+#   pixi run test           # run the test suite
+#   pixi run docs           # serve the textbook locally
+
+[workspace]
+name = "autopallios"
+channels = ["conda-forge"]
+# Apple-Silicon laptops (interns) + linux-64 (SDSC Expanse). Intel-Mac / Windows users
+# run weeks 1-2 on Colab per the program plan, so we don't carry those solve targets.
+platforms = ["linux-64", "osx-arm64"]
+
+# The always-on baseline stack, from conda-forge. Pinned to Python 3.13.
+[dependencies]
+python = "3.13.*"
+numpy = ">=1.26"
+scipy = ">=1.11"
+scikit-image = ">=0.22"
+tifffile = "*"
+imagecodecs = "*"            # decodes LZW/compressed TIFFs (the real brightfield samples)
+imageio = ">=2.31"
+imageio-ffmpeg = "*"        # provides the ffmpeg plugin that reads .avi time-lapses
+pandas = ">=2.1"
+matplotlib-base = ">=3.8"
+tqdm = "*"
+pip = "*"
+
+# Install the project itself, editable — this is what makes imports work everywhere.
+[pypi-dependencies]
+autopallios = { path = ".", editable = true }
+
+# ---- FEATURES (map 1:1 to the pyproject extras) --------------------------------
+[feature.dl.pypi-dependencies]
+torch = ">=2.2"
+cellpose = ">=3.1"
+# CellSAM is GitHub-only (not on PyPI). To use the "cellsam" backend, add it yourself:
+#   pixi add --feature dl --pypi "cellSAM @ git+https://github.com/vanvalenlab/cellSAM.git"
+
+# GPU build of PyTorch, isolated to Linux (Expanse) so a Mac intern never resolves CUDA.
+# system-requirements tells the solver to assume a CUDA 12 system, so the *cuda* build
+# of pytorch resolves when locking (the build machine itself need not have a GPU).
+[feature.gpu]
+platforms = ["linux-64"]
+[feature.gpu.system-requirements]
+cuda = "12"
+[feature.gpu.dependencies]
+pytorch = { version = ">=2.2", build = "*cuda*" }
+
+[feature.tracking.pypi-dependencies]
+trackpy = ">=0.6"
+btrack = ">=0.6"
+
+[feature.docs.pypi-dependencies]
+mkdocs-material = ">=9.5"
+mkdocstrings = { version = ">=0.24", extras = ["python"] }
+
+[feature.dev.dependencies]
+pytest = ">=7.4"
+ruff = ">=0.4"
+[feature.dev.pypi-dependencies]
+pytest-cov = ">=4.1"
+
+# ---- ENVIRONMENTS (pick the right one for the job) -----------------------------
+[environments]
+default = { features = [] }                          # baseline only — Day 1, runs the mock pipeline
+dl = { features = ["dl"] }                            # local CPU deep learning
+gpu = { features = ["gpu", "dl", "tracking"] }        # Expanse GPU runs (linux-64 only)
+docs = { features = ["docs"] }
+dev = { features = ["dev"] }
+full = { features = ["dl", "tracking", "docs", "dev"] }
+
+# ---- TASKS (the muscle memory we teach) ----------------------------------------
+[tasks]
+demo = "python recipes/wound_healing/run_migration.py"            # Day-1 end-to-end, synthetic data
+killcurve = "python recipes/cancer_cell_death/run_kill_curve.py"  # supervised-eval recipe, synthetic data
+baseline = { cmd = "autopallios run data/samples --kind directory --pattern '*_E4_2x2_W.tif' --as-gray" }
+test = "pytest -q"
+lint = "ruff check autopallios recipes tests"
+fmt = "ruff format autopallios recipes tests"
+docs = "mkdocs serve"
+docs-build = "mkdocs build --strict"

@@ -216,3 +216,29 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ---------------------------------------------------------------------------
+# autopallios-specific
+# ---------------------------------------------------------------------------
+# Recipe run outputs — never commit results / intermediate masks / figures.
+# (Ignore the contents, not the folder, so the .gitkeep placeholder stays tracked.)
+recipes/**/output/*
+!recipes/**/output/.gitkeep
+
+# Debug mask dumps written when running with debug=True outside a recipe.
+autopallios_debug/
+
+# pixi solved environments.
+.pixi/
+
+# Built docs site.
+site/
+
+# Large microscopy sample data — keep it out of git history. Place your own files
+# under data/samples/ locally; the library finds them at runtime. (Root-anchored so
+# it does NOT match the autopallios/data/ source package.)
+/data/
+
+# macOS finder cruft.
+.DS_Store
+**/.DS_Store
