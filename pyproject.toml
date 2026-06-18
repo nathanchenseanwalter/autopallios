@@ -23,34 +23,34 @@ classifiers = [
 # Core dependencies — these and ONLY these install by default. No torch, no cellpose.
 # The classic-CV baseline and the full mock pipeline run with just this stack.
 dependencies = [
-    "numpy>=1.26",
-    "scipy>=1.11",
-    "scikit-image>=0.22",
-    "tifffile>=2024.1.1",
-    "imagecodecs>=2024.1.1",   # decodes LZW/compressed TIFFs (the real brightfield samples)
-    "imageio>=2.31",
-    "imageio-ffmpeg>=0.4",     # the ffmpeg plugin that reads the .avi time-lapses
-    "pandas>=2.1",
-    "matplotlib>=3.8",
-    "tqdm>=4.66",
+    "numpy",
+    "scipy",
+    "scikit-image",
+    "tifffile",
+    "imagecodecs",   # decodes LZW/compressed TIFFs (the real brightfield samples)
+    "imageio",
+    "imageio-ffmpeg",     # the ffmpeg plugin that reads the .avi time-lapses
+    "pandas",
+    "matplotlib",
+    "tqdm",
 ]
 
 [project.optional-dependencies]
-# Heavy SOTA segmentation backends — opt-in, lazily imported (see core/segmenter.py).
+# Deep learning libraries
 dl = [
-    "torch>=2.2",
-    "cellpose>=3.1",
+    "torch",
+    "cellpose",
     # CellSAM is GitHub-only (not on PyPI). Add it explicitly when you want that backend:
     #   pip install "git+https://github.com/vanvalenlab/cellSAM.git"
 ]
 # Production tracking engines (the default nearest-centroid tracker needs none of these).
 tracking = [
-    "trackpy>=0.6",
-    "btrack>=0.6",
+    "trackpy",
+    "btrack",
 ]
 docs = [
-    "mkdocs-material>=9.5",
-    "mkdocstrings[python]>=0.24",
+    "mkdocs-material",
+    "mkdocstrings[python]",
 ]
 dev = [
     "pytest>=7.4",
@@ -68,18 +68,19 @@ Homepage = "https://github.com/nathanchenseanwalter/autopallios"
 Documentation = "https://nathanchenseanwalter.github.io/autopallios"
 
 [tool.hatch.version]
-path = "autopallios/__init__.py"   # reads __version__ = "0.1.0"
+path = "autopallios/__init__.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["autopallios"]         # ship only the library; recipes/tests/docs excluded
+packages = ["autopallios"]
 
 [tool.ruff]
 line-length = 100
 target-version = "py313"
-extend-exclude = ["docs"]
+# Notebooks are teaching artifacts (intentional blanks, display-only expressions),
+# authored as percent-format .py — exclude them from lint/format.
+extend-exclude = ["docs", "notebooks"]
 
 [tool.ruff.lint]
-# Beginner-friendly but real: pyflakes, pycodestyle, isort, pyupgrade, bugbear, docstrings.
 select = ["E", "F", "I", "UP", "B", "D"]
 ignore = [
     "D203",  # one-blank-line-before-class (conflicts with D211)
@@ -93,10 +94,68 @@ ignore = [
 convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
-# Recipes and tests are scripts/fixtures — relax docstring requirements there.
 "recipes/**" = ["D"]
 "tests/**" = ["D"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+
+[tool.jupytext]
+# Notebooks are authored as percent-format .py (clean diffs, lintable, reviewable).
+# The .ipynb twin is generated on open and git-ignored — the .py is the source of truth.
+formats = "ipynb,py:percent"
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-arm64"]
+
+[tool.pixi.dependencies]
+python = "3.13.*"
+pip = "*"
+
+# Install autopallios itself (editable) into EVERY environment, so recipes, notebooks, and
+# tests can `import autopallios` no matter the working directory (a Jupyter kernel's cwd is
+# the notebook's folder, not the repo root). Without this, only an ad-hoc `pip install -e`
+# made the package importable — which broke `pixi run demo` and `pixi run -e dev test`.
+[tool.pixi.pypi-dependencies]
+autopallios = { path = ".", editable = true }
+
+[tool.pixi.feature.gpu]
+platforms = ["linux-64"]
+[tool.pixi.feature.gpu.system-requirements]
+cuda = "12"
+[tool.pixi.feature.gpu.dependencies]
+pytorch = { version = ">=2.2", build = "*cuda*" }
+
+# Teaching env: notebooks + the annotation tool. Heavy (Jupyter + Qt), so it is NOT in
+# `default`/CI — Day-1 stays light. napari/pyqt come from conda-forge (reliable Qt on both
+# osx-arm64 and linux-64), unlike the fragile pip Qt stack. Needs a display: not for HPC/CI.
+[tool.pixi.feature.teach.dependencies]
+jupyterlab = "*"
+ipykernel = "*"
+jupytext = "*"
+napari = "*"
+pyqt = "*"
+
+[tool.pixi.environments]
+default = { features = [] }                     # baseline — Day 1 mock pipeline
+dl = ["dl"]                                     # local CPU deep learning
+teach = ["teach", "dl"]                         # notebooks + DL backends (pixi run -e teach lab)
+gpu = { features = ["gpu", "dl", "tracking"] }  # Expanse GPU runs (linux-64 only)
+docs = ["docs"]
+dev = ["dev"]
+full = ["dl", "tracking", "docs", "dev"]
+
+[tool.pixi.tasks]
+demo = "python recipes/wound_healing/run_migration.py"            # Day-1 end-to-end, synthetic data
+killcurve = "python recipes/cancer_cell_death/run_kill_curve.py"  # supervised-eval recipe, synthetic data
+baseline = { cmd = "autopallios run data/samples --kind directory --pattern '*_E4_2x2_W.tif' --as-gray" }
+test = "pytest"
+lint = "ruff check autopallios recipes tests"
+fmt = "ruff format autopallios recipes tests"
+docs = "mkdocs serve"
+docs-build = "mkdocs build --strict"
+gh-deploy = "mkdocs gh-deploy --force"   # build + push the site to the gh-pages branch
+lab = "jupyter lab notebooks/"           # open the notebooks (run in teach: pixi run -e teach lab)
+build-notebooks = "python tools/make_student_version.py"  # regenerate student notebooks from solutions/ (append --check in CI)

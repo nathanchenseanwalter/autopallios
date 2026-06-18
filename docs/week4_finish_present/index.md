@@ -1,22 +1,29 @@
-# Week 4 · Make it usable & tell the story
+# Week 4 · Finish & present
 
-> **Goal:** turn the pipeline into a one-command tool, validate it honestly against the
-> commercial software, and build the poster and talk.
+> **Goal:** turn the pipeline into a one-command tool, validate it honestly against another
+> method, and build the poster and talk.
 
-!!! note "Chapter status"
-    Structured stub — outline + working code references + the validation snippets, to be
-    expanded during the program.
+!!! note "Do the work — this week's notebooks"
+    [`notebooks/week4_finish_present/`](https://github.com/nathanchenseanwalter/autopallios/tree/main/notebooks/week4_finish_present):
+    `01_one_command_tool` · `02_validation_study` · `03_make_the_figures`. **Your bar:** a
+    folder-in → results-out run, plus a validation figure and one poster figure.
 
-## Outline
+## From notebook to tool
 
-- **From notebook to tool** — a single command/config that takes a folder of images and
-  outputs results + figures. Reproducibility (the editable install, fixed settings,
-  per-run manifests).
-- **A validation study** — how scientists prove a method works: agreement, where each
-  method wins, failure cases, honest limitations.
-- **The story** — problem → approach → results → impact (accurate, fast, free, accessible).
+A single command takes a folder of images and outputs results — no per-image babysitting:
+
+```bash
+autopallios run data/samples --kind directory --pattern "*_E4_2x2_W.tif" --as-gray --out results/
+```
+
+Getting there from a pile of notebook cells is a real skill — see
+[From notebook to library](../from_notebook_to_library.md). Reproducibility comes from the
+editable install, fixed settings, and the per-run `manifest.json` each recipe writes (which
+is what makes the numbers below credible).
 
 ## The supervised benchmark (with ground truth)
+
+You already wrote these metrics in Week 2 — here you *use* them at scale:
 
 ```python
 from autopallios.modules.evaluation import SupervisedMetrics
@@ -48,30 +55,26 @@ from autopallios.core.segmenter import Segmenter
 from autopallios.modules.evaluation import UnsupervisedMetrics, BlindEvaluationExporter
 
 baseline = Segmenter(model="baseline").segment(movie, channel_idx=0)
-model_b  = Segmenter(model="mock").segment(movie, channel_idx=0)   # swap for "cellpose"
+deep     = Segmenter(model="cellpose_sam").segment(movie, channel_idx=0)
 
 # (1) where do the two models agree?
 consensus = UnsupervisedMetrics().cross_model_consensus_score(
-    baseline, model_b, model_a="baseline", model_b="cellpose")
+    baseline, deep, model_a="baseline", model_b="cellpose_sam")
 print(consensus["summary"])
 
 # (2) export randomized, identity-masked overlays for blind human scoring
 manifest = BlindEvaluationExporter("blind_eval", seed=0).export(
-    movie, {"baseline": baseline, "cellpose": model_b})
+    movie, {"baseline": baseline, "cellpose_sam": deep})
 # a held-back _KEY_do_not_open.csv un-blinds it afterwards
 ```
 
-## Packaging
+## The story
 
-The whole thing is installable (`pip install -e .` / `pixi install`) and exposes a
-one-command tool:
-
-```bash
-autopallios run data/samples --kind directory --pattern "*_E4_2x2_W.tif" --as-gray --out results/
-```
+Problem → approach → results → impact (accurate, fast, free, accessible). Pair each poster
+figure with one sentence of interpretation, and put your validation numbers next to the
+quantitative result.
 
 ## The code behind this chapter
 
-See the full API in the reference:
 [`autopallios.modules.evaluation`](../reference/modules.md) — `SupervisedMetrics`,
 `UnsupervisedMetrics`, `BlindEvaluationExporter`, and the `METRIC_REGISTRY`.

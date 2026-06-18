@@ -225,6 +225,12 @@ __marimo__/
 recipes/**/output/*
 !recipes/**/output/.gitkeep
 
+# Notebooks: the percent-format .py files are the source of truth (tracked); the .ipynb
+# twins are generated on open (jupytext) and disposable. Student run outputs aren't committed.
+notebooks/**/*.ipynb
+notebooks/**/output/*
+!notebooks/**/output/.gitkeep
+
 # Debug mask dumps written when running with debug=True outside a recipe.
 autopallios_debug/
 
@@ -238,6 +244,10 @@ site/
 # under data/samples/ locally; the library finds them at runtime. (Root-anchored so
 # it does NOT match the autopallios/data/ source package.)
 /data/
+# ...but DO track the small hand-label gold set (a few tiny crops) used to score
+# segmentation in Week 2. Keep these small — they live in git history.
+!/data/gold/
+!/data/gold/**
 
 # macOS finder cruft.
 .DS_Store

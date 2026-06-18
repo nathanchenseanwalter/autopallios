@@ -11,8 +11,9 @@ splits, and data augmentation.
   `(T, H, W, C)`. Extend the well-id parsing in `autopallios/_utils.py` if filenames change.
 - `autopallios/data/synthetic.py` — the synthetic generator with matching ground truth;
   great for sanity-checking metrics before real labels exist.
-- Ground-truth label masks feed `SupervisedMetrics` in `autopallios/modules/evaluation.py`.
+- `autopallios/data/annotations.py` — load/save/validate the hand-label gold masks under
+  `data/gold/`; these feed `SupervisedMetrics` in `autopallios/modules/evaluation.py`.
 
-**First task:** load one real brightfield well and one Live/Dead AVI, confirm the shapes
-(`(T,H,W,1)` and `(T,H,W,3)`), and verify the Live/Dead channel mapping before the
-validation study relies on it.
+**First task:** confirm the two data shapes (`(T,H,W,1)` and `(T,H,W,3)`) and the Live/Dead
+channel mapping (a Week-1 warm-up), then in Week 2 hand-label 5 frames and save them as the
+gold set with `annotations.save_annotation`.

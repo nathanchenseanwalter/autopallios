@@ -7,7 +7,7 @@ speed benchmarks.
 
 **Your code touch-points:**
 
-- `pixi.toml` — the `gpu` environment (CUDA PyTorch, Linux-only) and the task shortcuts.
+- `pyproject.toml` (`[tool.pixi.*]`) — the `gpu` environment (CUDA PyTorch, Linux-only) and the task shortcuts.
 - `slurm/segment_array.sbatch` — the Expanse job array (one task per well). This is where
   `debug=False` matters: no per-frame TIFF dumps flooding the parallel filesystem.
 - `autopallios/cli.py` — the one-command entry point your batch script calls.

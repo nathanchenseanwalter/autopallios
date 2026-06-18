@@ -1,7 +1,8 @@
 # For Mentors
 
 A quick map of where the load-bearing pieces live, so you can point interns at the right
-file and grade by artifact.
+file and grade by artifact. For program logistics (pre-assessment, AI-usage policy,
+escalation path, recordings), see the [Mentor Runbook](mentor_runbook.md).
 
 ## Where students insert real things
 
@@ -24,15 +25,20 @@ pixi install && pixi run demo && pixi run test
 If those three pass, an intern is unblocked regardless of whether the SDSC allocation or
 real data is ready yet.
 
-## Grading by artifact (maps to the 4-week arc)
+## The minimal bar, by week
 
-- **Week 1**: a working classic-CV baseline + documented failure cases (merged cells, the
-  scratch counted as a cell).
-- **Week 2**: a deep-learning segmenter that beats the baseline, with IoU/F1 numbers.
-- **Week 3**: the pipeline running on Expanse over a full time-lapse, with tracking and
-  scratch/debris rejection + a speed comparison.
-- **Week 4**: the one-command tool, a validation study vs the commercial software, and the
-  poster.
+Each week's bar is simple and binary: the week's **notebook set runs top-to-bottom
+("Restart & Run All", no errors) and prints the metric in the last column.** Polish and the
+optional notebooks are upside, not the bar.
+
+| Week | Notebook set | Minimal expectation | The number they show you |
+|---|---|---|---|
+| 1 · Foundations | `notebooks/week1_foundations/` | load a real well; print its `(T,H,W,C)` shape; plot frames + a pixel histogram | frame shape + a histogram figure |
+| 2 · Annotate / CV / Eval | `notebooks/week2_annotate_cv_eval/` | 5 images annotated; baseline runs; **their own** IoU + precision/recall/F1 return numbers | baseline F1 + signed `count_bias` vs their labels |
+| 3 · Algorithm / HPC | `notebooks/week3_algorithm_hpc/` | the deep model beats the baseline on their Week-2 metric; one job runs on Expanse | (deep F1 − baseline F1) > 0; an Expanse job |
+| 4 · Finish / Present | `notebooks/week4_finish_present/` | folder-in → results-out; a validation comparison produced | consensus / blind-A/B result + a poster figure |
+
+Tracking (`week3_algorithm_hpc/04_tracking_advanced`) is optional — above-bar, not required.
 
 ## Conventions that keep a cohort sane
 

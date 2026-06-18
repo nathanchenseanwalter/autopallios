@@ -66,3 +66,7 @@ for the handful of rules that keep the shared repo tidy.
 | `pixi run test` | the test suite |
 | `pixi run lint` | ruff style + docstring checks |
 | `pixi run docs` | serve this textbook locally |
+| `pixi run -e teach lab` | open the weekly notebooks in JupyterLab |
+| `pixi run build-notebooks` | (mentors) regenerate student notebooks from `solutions/` |
+
+Next: [Week 1 · Foundations & first look](week1_foundations/index.md).

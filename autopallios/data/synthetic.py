@@ -18,7 +18,7 @@ The fabricated scenes deliberately include the things the pipeline must cope wit
 Channel convention for synthetic data: **channel 0 is the "all cells" stain used for
 segmentation** (every cell is bright in it). For 3-channel scenes, channel 1 is the
 live signal and channel 2 is the dead signal. (For *real* Live/Dead AVIs, verify the
-channel mapping before relying on it — see the Week-2 docs.)
+channel mapping before relying on it — see the Week-1 docs.)
 """
 
 from __future__ import annotations

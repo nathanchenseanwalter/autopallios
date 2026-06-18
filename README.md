@@ -46,6 +46,7 @@ autopallios/        the installable library
   modules/          track · measure intensity · evaluate           (tracking, intensity, evaluation)
   data/             synthetic movie generator + sample-data paths
 recipes/            per-student experiment scripts (your workspace)
+notebooks/          the weekly notebooks (where students work) + solution answer keys
 docs/               the textbook (mkdocs) — mirrors the 4-week program
 slurm/              SDSC Expanse batch templates
 tests/              CPU-only, mock-data tests
@@ -64,10 +65,10 @@ tests/              CPU-only, mock-data tests
 
 | Week | Theme | What we build |
 |---|---|---|
-| 1 | From microscope to numbers | the classic-CV baseline — and watch it fail |
-| 2 | Teaching a computer to see cells | deep-learning segmentation (Cellpose-SAM / CellSAM), IoU/F1 |
-| 3 | Scaling up & tracking over time | run on SDSC Expanse via Slurm; track cells; reject scratches/debris |
-| 4 | Make it usable & tell the story | one-command tool, validation study, poster |
+| 1 | Foundations & first look | load & visualize a real well; the biology & the assay |
+| 2 | Annotate → traditional CV → evaluate | the classic-CV baseline + the metrics you implement (IoU, P/R/F1) |
+| 3 | The algorithm → the supercomputer | deep-learning segmentation (Cellpose-SAM) on SDSC Expanse via Slurm |
+| 4 | Finish & present | one-command tool, validation study, poster |
 
 ## Team roles
 

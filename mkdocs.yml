@@ -38,19 +38,24 @@ markdown_extensions:
 nav:
   - Home: index.md
   - "Chapter 0 · Setup": chapter0_setup.md
-  - "Week 1 · From microscope to numbers":
-      - Overview: week1_microscope_to_numbers/index.md
-      - The classic-CV baseline: week1_microscope_to_numbers/classic_cv_baseline.md
-  - "Week 2 · Teaching a computer to see cells":
-      - Overview: week2_teaching_to_see/index.md
-  - "Week 3 · Scaling up & tracking":
-      - Overview: week3_scaling_and_tracking/index.md
-  - "Week 4 · Make it usable & tell the story":
-      - Overview: week4_make_it_usable/index.md
+  - "Week 1 · Foundations & first look":
+      - Overview: week1_foundations/index.md
+  - "Week 2 · Annotate → traditional CV → evaluate":
+      - Overview: week2_annotate_cv_eval/index.md
+      - Annotate 5 images: week2_annotate_cv_eval/annotation.md
+      - The classic-CV baseline: week2_annotate_cv_eval/classic_cv_baseline.md
+      - "Implement the metrics (IoU, precision/recall/F1)": week2_annotate_cv_eval/implement_the_metrics.md
+  - "Week 3 · The algorithm → the supercomputer":
+      - Overview: week3_algorithm_hpc/index.md
+      - "Tracking (advanced / optional)": week3_algorithm_hpc/tracking_advanced.md
+  - "Week 4 · Finish & present":
+      - Overview: week4_finish_present/index.md
+  - "From notebook to library": from_notebook_to_library.md
   - "API Reference":
       - Core engine: reference/core.md
       - Analytical modules: reference/modules.md
   - "For Mentors": for_mentors.md
+  - "Mentor Runbook": mentor_runbook.md
   - "Role Guides":
       - Data Lead: roles/data_lead.md
       - Model Lead: roles/model_lead.md

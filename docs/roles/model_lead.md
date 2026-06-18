@@ -11,7 +11,9 @@ training loop, and accuracy metrics.
   the mock for a real model with `Segmenter(model="cellpose")`, or add your own with one
   `@register_backend("name")` class.
 - `autopallios/core/baseline.py` — the classic-CV baseline you must beat.
-- `autopallios/modules/evaluation.py` — `SupervisedMetrics` (IoU, F1) to prove it.
+- `autopallios/modules/evaluation.py` — `SupervisedMetrics` (IoU, F1) to prove it, scored
+  with the metric functions the cohort implements in Week 2.
 
-**First task:** run `Segmenter(model="baseline")` and `Segmenter(model="mock")` on a well
-and compare object counts; then wire up one real backend behind the `dl` extra.
+**First task:** run `Segmenter(model="baseline")` on a well, then
+`Segmenter(model="cellpose_sam")` (the recommended Week-3 generalist, behind the `dl`
+extra) and compare F1 on the same labels.

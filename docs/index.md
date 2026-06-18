@@ -36,9 +36,12 @@ real tool, and each chapter links to the exact code module it explains.
 
 | Week | You learn | You build | Chapter |
 |---|---|---|---|
-| 1 | Images as arrays; the traditional way and why it fails | the classic-CV baseline | [Week 1](week1_microscope_to_numbers/index.md) |
-| 2 | Supervised learning; generalist models | a deep-learning segmenter | [Week 2](week2_teaching_to_see/index.md) |
-| 3 | HPC, Slurm, tracking | scale-up + cell tracking | [Week 3](week3_scaling_and_tracking/index.md) |
-| 4 | Honest validation; packaging | the one-command tool + a validation study | [Week 4](week4_make_it_usable/index.md) |
+| 1 | Images as arrays; the biology & assay; visualization | load & visualize a real well | [Week 1](week1_foundations/index.md) |
+| 2 | Annotation; classic CV; **you implement** IoU / precision / recall / F1 | the baseline scored by your own metrics | [Week 2](week2_annotate_cv_eval/index.md) |
+| 3 | Deep-learning segmentation; HPC & Slurm (tracking optional) | a model that beats the baseline, run on Expanse | [Week 3](week3_algorithm_hpc/index.md) |
+| 4 | Honest validation; packaging | the one-command tool + a validation study | [Week 4](week4_finish_present/index.md) |
+
+Each week also ships a set of **notebooks** under `notebooks/<week>/` — that's where you do
+the work (the library is the answer key). Open them with `pixi run -e teach lab`.
 
 New here? Start with [Chapter 0 · Setup](chapter0_setup.md).
