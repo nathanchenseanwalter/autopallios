@@ -1,7 +1,7 @@
-"""autopallios — automated cell segmentation, tracking & analysis for microscopy.
+"""autopallios, automated cell segmentation, tracking & analysis for microscopy.
 
 A small, teachable library for the OPALS @ UC San Diego internship. The design
-goal is "import everything, press run, get the best results" — point it at a
+goal is "import everything, press run, get the best results", point it at a
 folder of images and get clean cell outlines, tracks, measurements, and honest
 validation numbers, with no per-image babysitting.
 
@@ -16,13 +16,13 @@ The whole pipeline runs on synthetic data with no GPU and no real files::
 
 Package map
 -----------
-- :mod:`autopallios.core`     — load data, segment cells, reject artifacts.
-- :mod:`autopallios.modules`  — track, measure intensity, evaluate.
-- :mod:`autopallios.data`     — synthetic movie generator + sample-data paths.
-- :mod:`autopallios.pipeline` — the thin ``Pipeline`` orchestrator.
+- :mod:`autopallios.core`    , load data, segment cells, reject artifacts.
+- :mod:`autopallios.modules` , track, measure intensity, evaluate.
+- :mod:`autopallios.data`    , synthetic movie generator + sample-data paths.
+- :mod:`autopallios.pipeline`, the thin ``Pipeline`` orchestrator.
 
 Heavy models (Cellpose, CellSAM, ...) and trackers (trackpy, btrack) are
-optional extras, imported lazily — so ``import autopallios`` is always fast and
+optional extras, imported lazily, so ``import autopallios`` is always fast and
 works with only the lightweight scientific-Python stack.
 """
 

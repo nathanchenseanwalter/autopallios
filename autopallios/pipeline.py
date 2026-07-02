@@ -1,13 +1,13 @@
 """The thin orchestrator: load → segment → filter, in one object.
 
-``Pipeline`` is *optional* convenience sugar — it strings together
+``Pipeline`` is *optional* convenience sugar, it strings together
 :mod:`autopallios.core` so a one-liner can go from a folder of images to clean labels.
 It holds **no algorithm logic** itself; it just delegates. The two teaching recipes
 deliberately call ``io`` / ``Segmenter`` / modules *directly* (so students see each
 step), but the CLI and quick experiments use this.
 
 Note the boundary: ``Pipeline`` stops after segment + filter. Tracking, intensity, and
-evaluation live in :mod:`autopallios.modules`, and a recipe wires those on as needed —
+evaluation live in :mod:`autopallios.modules`, and a recipe wires those on as needed ,
 this keeps ``core`` free of any dependency on ``modules``.
 """
 

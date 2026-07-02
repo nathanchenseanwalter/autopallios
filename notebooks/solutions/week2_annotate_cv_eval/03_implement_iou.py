@@ -16,7 +16,7 @@
 # **Reading:** *Implement the metrics (IoU, precision/recall/F1)* chapter.
 # **Deliverable:** your own `iou_two_masks` function, proven correct against the library.
 #
-# To score segmentation we first need one number for "how much do two blobs overlap?" —
+# To score segmentation we first need one number for "how much do two blobs overlap?" ,
 # the **Intersection over Union**:
 #
 # $$\mathrm{IoU}(A, B) = \frac{|A \cap B|}{|A \cup B|} = \frac{\text{pixels in both}}{\text{pixels in either}}$$
@@ -27,7 +27,7 @@
 #
 # The whole library shares **one** IoU implementation
 # (`autopallios.modules._common.iou_matrix`). You are about to write your own from
-# scratch, then check it against that shared one — your first taste of "implement it in a
+# scratch, then check it against that shared one, your first taste of "implement it in a
 # notebook, then trust the tested library version."
 
 # %%
@@ -38,7 +38,7 @@ import numpy as np
 #
 # Fill in the body below. `mask_a` and `mask_b` are boolean images (`True` where the cell
 # is). You need the count of pixels that are in **both** (intersection) and in **either**
-# (union), then their ratio — guarding against an empty union so you never divide by zero.
+# (union), then their ratio, guarding against an empty union so you never divide by zero.
 
 # %%
 def iou_two_masks(mask_a, mask_b):
@@ -53,10 +53,10 @@ def iou_two_masks(mask_a, mask_b):
 
 
 # %% [markdown]
-# ## Grader — do not edit
+# ## Grader, do not edit
 #
 # This cell builds two overlapping squares and checks your `iou_two_masks` against the
-# library's `iou_matrix`. A green ✅ means your function is correct.
+# library's `iou_matrix`. A green means your function is correct.
 
 # %%
 from autopallios.modules._common import iou_matrix  # noqa: E402
@@ -71,7 +71,7 @@ iou, _, _ = iou_matrix(a, b)  # the library, on the same two objects
 reference = float(iou[0, 0])
 
 assert abs(mine - reference) < 1e-9, f"got {mine:.4f}, the library says {reference:.4f}"
-print(f"✅ your IoU matches the library: {mine:.3f}")
+print(f"your IoU matches the library: {mine:.3f}")
 
 # %% [markdown]
 # ## See it on real masks
@@ -98,4 +98,4 @@ viz.compare(pred, truth, frame=0)
 
 # %% [markdown]
 # **Next:** in `04_precision_recall_f1` you turn matched/unmatched cells (TP/FP/FN) into
-# precision, recall, and F1 — the score the deep model in Week 3 must beat.
+# precision, recall, and F1, the score the deep model in Week 3 must beat.

@@ -20,9 +20,9 @@
 # In `03_implement_iou` you matched predicted cells to true cells (IoU ≥ 0.5). That splits
 # every object into one of three buckets:
 #
-# - **TP** (true positive): a predicted cell that matched a true cell — *found it*.
-# - **FP** (false positive): a predicted cell with no match — *invented it* (debris, a scratch).
-# - **FN** (false negative): a true cell with no match — *missed it* (merged, too faint).
+# - **TP** (true positive): a predicted cell that matched a true cell, *found it*.
+# - **FP** (false positive): a predicted cell with no match, *invented it* (debris, a scratch).
+# - **FN** (false negative): a true cell with no match, *missed it* (merged, too faint).
 #
 # From those three counts come the three scores:
 #
@@ -45,12 +45,12 @@ import numpy as np
 # %%
 def prf1(tp, fp, fn):
     """Return (precision, recall, f1) from the TP / FP / FN counts."""
-    # TODO(you): precision=tp/(tp+fp); recall=tp/(tp+fn); f1=2*tp/(2*tp+fp+fn) — guard each zero denominator
-    raise NotImplementedError("Exercise: precision=tp/(tp+fp); recall=tp/(tp+fn); f1=2*tp/(2*tp+fp+fn) — guard each zero denominator")
+    # TODO(you): precision=tp/(tp+fp); recall=tp/(tp+fn); f1=2*tp/(2*tp+fp+fn), guard each zero denominator
+    raise NotImplementedError("Exercise: precision=tp/(tp+fp); recall=tp/(tp+fn); f1=2*tp/(2*tp+fp+fn), guard each zero denominator")
 
 
 # %% [markdown]
-# ## Grader — do not edit
+# ## Grader, do not edit
 #
 # We run the real baseline on a synthetic well, ask the library for the TP/FP/FN of one
 # frame, and check that *your* formulas reproduce the library's precision/recall/F1.
@@ -70,7 +70,7 @@ p, r, f = prf1(row["tp"], row["fp"], row["fn"])
 assert abs(p - row["precision"]) < 1e-9, f"precision: got {p}, library {row['precision']}"
 assert abs(r - row["recall"]) < 1e-9, f"recall: got {r}, library {row['recall']}"
 assert abs(f - row["f1"]) < 1e-9, f"f1: got {f}, library {row['f1']}"
-print(f"✅ your precision/recall/F1 match the library: P={p:.2f} R={r:.2f} F1={f:.2f}")
+print(f"your precision/recall/F1 match the library: P={p:.2f} R={r:.2f} F1={f:.2f}")
 
 # %% [markdown]
 # ## Score the baseline on your data, and read the bias
@@ -89,5 +89,5 @@ viz.compare(pred, truth, frame=0)
 
 # %% [markdown]
 # **Interpret it:** is your `count_bias` positive or negative? Which failure is your
-# baseline making? Write down this F1 — in Week 3, the deep-learning model has to beat it
+# baseline making? Write down this F1, in Week 3, the deep-learning model has to beat it
 # on this exact metric, and push `count_bias` toward 0.

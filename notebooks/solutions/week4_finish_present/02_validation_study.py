@@ -14,43 +14,42 @@
 # # Week 4 · The validation study
 #
 # **Reading:** *Finish & present* chapter.
-# **Deliverable:** an honest comparison — your tool vs. another method — with numbers.
+# **Deliverable:** an honest comparison, your tool vs. another method, with numbers.
 #
 # "It looks good" is not science. We validate three ways, each already built into the
-# library (you do **not** write new metric code here — you *use* what's there):
+# library (you do **not** write new metric code here, you *use* what's there):
 #
-# 1. **Supervised** — score against hand labels (IoU, F1) when you have ground truth.
-# 2. **Unsupervised consensus** — where two independent models agree, you can trust the
+# 1. **Supervised**, score against hand labels (IoU, F1) when you have ground truth.
+# 2. **Unsupervised consensus**, where two independent models agree, you can trust the
 #    result with *no* labels.
-# 3. **Blind A/B** — a human scores two methods without knowing which is which.
+# 3. **Head-to-head vs. Agilent**, hold our tool and the commercial AI to the *same* metric,
+#    on the same wells.
 
 # %%
+import pandas as pd
+
 from autopallios.core.baseline import BaselineParams, BaselineSegmenter
 from autopallios.data import synthetic
-from autopallios.modules.evaluation import (
-    BlindEvaluationExporter,
-    SupervisedMetrics,
-    UnsupervisedMetrics,
-)
+from autopallios.modules.evaluation import SupervisedMetrics, UnsupervisedMetrics
 
 movie, truth = synthetic.make_movie_with_labels(
     n_frames=4, size=(160, 160), n_cells=16, motion="migration", with_scratch=True, seed=11
 )
 
-# Two genuinely different "methods" to compare (here: watershed on vs. off; in your study,
-# model B is cellpose_sam and the reference is the commercial tool).
+# Two of *our* models to compare (here: watershed on vs. off; in your study these are the
+# Week-2 baseline and the Week-3 cellpose_sam). Agilent enters as the reference in section 3.
 method_a = BaselineSegmenter(BaselineParams(use_watershed=True)).segment(movie, channel_idx=0)
 method_b = BaselineSegmenter(BaselineParams(use_watershed=False)).segment(movie, channel_idx=0)
 
 # %% [markdown]
-# ## 1. Supervised — against ground truth
+# ## 1. Supervised, against ground truth
 
 # %%
 agg = SupervisedMetrics().evaluate(method_a, truth)["aggregate"]
 print(agg[["mean_f1", "mean_semantic_iou", "count_bias"]].round(3))
 
 # %% [markdown]
-# ## 2. Unsupervised consensus — no labels needed
+# ## 2. Unsupervised consensus, no labels needed
 
 # %%
 consensus = UnsupervisedMetrics().cross_model_consensus_score(
@@ -59,17 +58,45 @@ consensus = UnsupervisedMetrics().cross_model_consensus_score(
 print(consensus["summary"][["consensus_score", "total_agree", "total_a_only", "total_b_only"]])
 
 # %% [markdown]
-# ## 3. Blind A/B — randomized, identity-hidden overlays for a human to score
+# ## 3. Head-to-head vs. Agilent's eSight AI
+#
+# The tool we're replacing, **Agilent xCELLigence RTCA eSight AI**, is a strong one-click
+# segmenter, but it runs **only on a local workstation**; it cannot scale to the
+# supercomputer. We can still hold it to the *same* ruler. Drop the masks Agilent exports into
+# `load_agilent_masks(...)`; until we have them, `make_agilent_like` fabricates a plausible
+# stand-in so this runs today.
 
 # %%
-import tempfile
-from pathlib import Path
+from autopallios.data.external import load_agilent_masks, make_agilent_like  # noqa: F401
 
-with tempfile.TemporaryDirectory() as out:
-    manifest = BlindEvaluationExporter(out, seed=0).export(
-        movie, {"watershed": method_a, "no_watershed": method_b}, frames=[0, 1]
+# Real study: agilent = load_agilent_masks("data/agilent_export/<well>")
+# TODO: point at a real Agilent export when available. Until then, a synthetic stand-in:
+agilent = make_agilent_like(truth, seed=0)
+
+rows = []
+for name, masks in {
+    "autopallios (baseline)": method_a,
+    "autopallios (watershed off)": method_b,
+    "Agilent eSight AI": agilent,
+}.items():
+    agg = SupervisedMetrics().evaluate(masks, truth)["aggregate"]
+    rows.append(
+        {
+            "method": name,
+            "mean_f1": round(float(agg["mean_f1"].iloc[0]), 3),
+            "mean_semantic_iou": round(float(agg["mean_semantic_iou"].iloc[0]), 3),
+            "count_bias": round(float(agg["count_bias"].iloc[0]), 3),
+        }
     )
-    n_png = len(list(Path(out).glob("*.png")))
-    has_key = (Path(out) / "_KEY_do_not_open.csv").exists()
-print(f"wrote {n_png} blind A/B panels; un-blinding key present: {has_key}")
-print("✅ validated three ways — supervised, consensus, and blind A/B")
+leaderboard = pd.DataFrame(rows).sort_values("mean_f1", ascending=False)
+print(leaderboard.to_string(index=False))
+
+# %% [markdown]
+# **The differentiator isn't only the score.** Where methods tie on F1, ours still wins on
+# *reach*: the identical `Segmenter(...).segment(...)` call runs on one laptop **or** across a
+# whole plate on Expanse (`sbatch slurm/segment_array.sbatch`, Week 3), Agilent's AI is
+# local-only. Open, free, reproducible, *and* HPC-scalable is the argument the poster makes.
+# (Then see the optional `04_distill_for_hpc`: turn Agilent's own outputs into an HPC model.)
+
+# %%
+print("validated three ways, supervised, consensus, and a same-metric head-to-head vs Agilent")

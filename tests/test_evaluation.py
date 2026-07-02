@@ -9,6 +9,9 @@ from autopallios.modules import intensity, tracking
 from autopallios.modules.evaluation import (
     SupervisedMetrics,
     UnsupervisedMetrics,
+    average_precision,
+    pr_curve,
+    roc_auc,
 )
 
 
@@ -44,6 +47,41 @@ def test_temporal_consistency_and_anomaly():
     anomaly = UnsupervisedMetrics().morphological_anomaly_rate(meas)
     assert "is_anomaly" in anomaly["flagged"].columns
     assert "anomaly_rate" in anomaly["rate"].columns
+
+
+def test_ranking_metrics_perfect_and_worst():
+    scores = np.array([0.9, 0.8, 0.7, 0.2, 0.1])
+    perfect = np.array([1, 1, 1, 0, 0])
+    assert np.isclose(roc_auc(scores, perfect), 1.0)
+    assert np.isclose(average_precision(scores, perfect), 1.0)
+    # Same scores, labels reversed → perfectly wrong ranking.
+    worst = np.array([0, 0, 0, 1, 1])
+    assert np.isclose(roc_auc(scores, worst), 0.0)
+
+
+def test_roc_auc_matches_rank_formula():
+    # Mann–Whitney identity: AUC = P(random positive outranks random negative).
+    rng = np.random.default_rng(0)
+    scores = rng.random(200)
+    labels = (rng.random(200) < 0.3).astype(int)
+    pos, neg = scores[labels == 1], scores[labels == 0]
+    brute = np.mean([p > n for p in pos for n in neg])
+    assert np.isclose(roc_auc(scores, labels), brute, atol=1e-9)
+
+
+def test_pr_curve_recall_is_monotone():
+    rng = np.random.default_rng(1)
+    scores = rng.random(50)
+    labels = (rng.random(50) < 0.4).astype(int)
+    curve = pr_curve(scores, labels)  # ordered by descending threshold
+    recall = curve["recall"].to_numpy()
+    assert np.all(np.diff(recall) >= -1e-12)  # recall never decreases as threshold drops
+    assert curve["precision"].between(0.0, 1.0).all()
+
+
+def test_ranking_metrics_single_class_is_nan():
+    assert np.isnan(roc_auc([0.1, 0.9], [1, 1]))
+    assert np.isnan(roc_auc([0.1, 0.9], [0, 0]))
 
 
 def test_blind_exporter_writes_files(tmp_path):

@@ -8,7 +8,7 @@ that *could* write an intermediate result to disk does so only by handing it to 
 The contract
 ------------
 - ``debug=False`` (production / HPC): a ``DebugSink`` is **disabled**. Every
-  :meth:`DebugSink.write_masks` call is a *no-op* — nothing touches the disk. The
+  :meth:`DebugSink.write_masks` call is a *no-op*, nothing touches the disk. The
   masks are still returned to the caller as in-memory numpy arrays and passed
   straight to the analytics modules. This is what the kill-curve recipe uses so a
   Slurm job on the supercomputer never floods the parallel filesystem with files.
@@ -18,7 +18,7 @@ The contract
   in Fiji/ImageJ to literally *see* where the segmentation succeeded or failed. This
   is what the wound-healing recipe uses.
 
-Crucially, the data flowing through the pipeline is **identical** in both modes —
+Crucially, the data flowing through the pipeline is **identical** in both modes ,
 ``debug`` only controls the side effect of persisting a copy. The array your recipe
 hands to ``Tracker`` is the same object either way.
 """
@@ -57,7 +57,7 @@ class DebugSink:
         *,
         well_id: str | None = None,
     ) -> list[Path]:
-        """Persist a ``(T, H, W)`` label stack as a ``.tif`` sequence — or skip it.
+        """Persist a ``(T, H, W)`` label stack as a ``.tif`` sequence, or skip it.
 
         Args:
             stage_name: A short label for this stage (e.g. ``"segmentation"``);

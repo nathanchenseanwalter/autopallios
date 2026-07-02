@@ -1,10 +1,10 @@
-"""Wound-healing migration recipe — LOCAL DEBUG run (Week 1-2 prototyping).
+"""Wound-healing migration recipe, LOCAL DEBUG run (Week 1-2 prototyping).
 
 Scientific question
 -------------------
 As fibroblasts migrate into a scratch ("wound"), does our segmentation stay
 *temporally stable*? We have NO ground-truth labels for this assay, so we score the
-result with an UNSUPERVISED proxy: the **Temporal Consistency Score** — the
+result with an UNSUPERVISED proxy: the **Temporal Consistency Score**, the
 frame-to-frame variation of each tracked cell's area and integrated intensity. A
 flickering, unstable mask scores poorly; a steady one scores well.
 
@@ -20,7 +20,7 @@ Run it with zero setup (fabricates a synthetic scratch movie)::
 
     python recipes/wound_healing/run_migration.py
 
-Run on real data — point ``--input`` at a directory of single-frame brightfield TIFFs::
+Run on real data, point ``--input`` at a directory of single-frame brightfield TIFFs::
 
     python recipes/wound_healing/run_migration.py --input data/samples --well E4
 """
@@ -36,7 +36,7 @@ from autopallios.modules import evaluation, intensity, tracking
 from autopallios.recipe import RecipeContext, resolve_or_mock
 
 # --- STUDENT KNOBS ---------------------------------------------------------
-DATA_DIR: Path | None = None  # e.g. Path("data/samples") — a DIRECTORY of .tif frames
+DATA_DIR: Path | None = None  # e.g. Path("data/samples"), a DIRECTORY of .tif frames
 WELL: str = "E4"  # which well's brightfield series to load
 N_MOCK_FRAMES: int = 20  # synthetic movie length when no real data is given
 MAX_DISTANCE: float = 15.0  # tracking gate (px a cell may move between frames)
@@ -77,7 +77,7 @@ def main(argv: list[str] | None = None) -> None:
     )
     assert movie.ndim == 4 and movie.shape[-1] == 1, "expected (T, H, W, 1) grayscale"
 
-    # 2) SEGMENT — debug=True => the engine dumps mask_t###.tif into ctx.masks_dir.
+    # 2) SEGMENT, debug=True => the engine dumps mask_t###.tif into ctx.masks_dir.
     seg = segmenter.Segmenter(
         model="mock", debug=ctx.debug, output_dir=ctx.masks_dir, run_name="migration"
     )
@@ -86,7 +86,7 @@ def main(argv: list[str] | None = None) -> None:
     # 3) FILTER scratch/debris leakage before analysis (keep the receipt of removals).
     masks, report = artifact_filter.ArtifactFilter(min_area=30, max_aspect_ratio=8.0).apply(masks)
 
-    # 4) TRACK — pass the IN-MEMORY array straight downstream (no disk round-trip).
+    # 4) TRACK, pass the IN-MEMORY array straight downstream (no disk round-trip).
     tracks = tracking.track(masks, max_distance=MAX_DISTANCE)
 
     # 5) MEASURE per-track area & intensity over time (input to the consistency score).
@@ -94,10 +94,10 @@ def main(argv: list[str] | None = None) -> None:
         movie, tracks.relabeled_masks, id_column="track_id"
     )
 
-    # 6) UNSUPERVISED EVALUATION — Temporal Consistency Score (no ground truth).
+    # 6) UNSUPERVISED EVALUATION, Temporal Consistency Score (no ground truth).
     tcs = evaluation.UnsupervisedMetrics().temporal_consistency_score(meas, id_column="track_id")
 
-    # 7) REPORT — DataFrames to stdout + CSVs in output/.
+    # 7) REPORT, DataFrames to stdout + CSVs in output/.
     print(
         f"\nTracked {tracks.n_tracks} cells across {movie.shape[0]} frames "
         f"({int((~report['kept']).sum())} artifacts removed)."

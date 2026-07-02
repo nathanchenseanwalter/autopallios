@@ -45,11 +45,13 @@ nav:
       - Annotate 5 images: week2_annotate_cv_eval/annotation.md
       - The classic-CV baseline: week2_annotate_cv_eval/classic_cv_baseline.md
       - "Implement the metrics (IoU, precision/recall/F1)": week2_annotate_cv_eval/implement_the_metrics.md
+      - "The PR curve, AP & AUC": week2_annotate_cv_eval/pr_curve_and_auc.md
   - "Week 3 · The algorithm → the supercomputer":
       - Overview: week3_algorithm_hpc/index.md
       - "Tracking (advanced / optional)": week3_algorithm_hpc/tracking_advanced.md
   - "Week 4 · Finish & present":
       - Overview: week4_finish_present/index.md
+      - "Compare to Agilent": week4_finish_present/compare_to_agilent.md
   - "From notebook to library": from_notebook_to_library.md
   - "API Reference":
       - Core engine: reference/core.md

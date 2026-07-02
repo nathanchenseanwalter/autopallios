@@ -1,9 +1,9 @@
-"""The classical computer-vision baseline — the "old way" that we beat.
+"""The classical computer-vision baseline, the "old way" that we beat.
 
 This mirrors what the commercial tool (Agilent xCELLigence RTCA eSight) does under
 the hood: **threshold → morphological cleanup → distance-transform watershed →
 size filter**. It is rule-based, has a knob for everything, and it *fails* in
-exactly the ways the program is about — it merges weak-boundary cells and happily
+exactly the ways the program is about, it merges weak-boundary cells and happily
 labels a plate scratch as a cell.
 
 That failure is the *point*. In Week 1 the interns build this, watch it break, and
@@ -79,7 +79,7 @@ class BaselineSegmenter:
     # -- the steps, one method each (so each maps to a lecture slide) ---------
 
     def _threshold(self, image01: np.ndarray) -> np.ndarray:
-        """Step 1 — turn a grayscale image into a black/white (boolean) mask."""
+        """Step 1, turn a grayscale image into a black/white (boolean) mask."""
         p = self.params
         if p.threshold_method == "otsu":
             thresh = filters.threshold_otsu(image01)
@@ -103,7 +103,7 @@ class BaselineSegmenter:
         return bright if bright.mean() <= 0.5 else ~bright
 
     def _clean(self, binary: np.ndarray) -> np.ndarray:
-        """Step 2 — morphological cleanup: open (de-speckle), close + fill holes.
+        """Step 2, morphological cleanup: open (de-speckle), close + fill holes.
 
         We use the version-stable ``opening``/``closing`` (they work on boolean images),
         and fill holes with ``scipy.ndimage.binary_fill_holes``. Removing *small objects*
@@ -119,7 +119,7 @@ class BaselineSegmenter:
         return binary
 
     def _split(self, binary: np.ndarray) -> FrameLabels:
-        """Step 3 — split touching cells with a distance-transform watershed."""
+        """Step 3, split touching cells with a distance-transform watershed."""
         p = self.params
         if not p.use_watershed:
             return measure.label(binary).astype(np.int32)
@@ -133,7 +133,7 @@ class BaselineSegmenter:
         return labels.astype(np.int32)
 
     def _size_filter(self, labels: FrameLabels) -> FrameLabels:
-        """Step 4 — drop objects outside the allowed area band, then renumber."""
+        """Step 4, drop objects outside the allowed area band, then renumber."""
         p = self.params
         keep = np.zeros_like(labels)
         next_label = 1

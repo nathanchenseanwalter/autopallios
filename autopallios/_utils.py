@@ -1,18 +1,18 @@
 """Small shared helpers used across the whole library.
 
-Everything here is deliberately boring and well-documented — these are the
+Everything here is deliberately boring and well-documented, these are the
 "one place to look" utilities so the same logic is never copy-pasted into ten
 files (which, in a teaching codebase shared by a whole cohort, is how bugs and
 merge conflicts breed).
 
 Contents
 --------
-- :func:`to_float01`      — the single, dtype-aware image normalizer.
-- :func:`require`         — friendly lazy-import of optional heavy dependencies.
-- :func:`resolve_debug_dir` — pick & create the folder where debug masks are written.
-- :func:`parse_well_id`   — read the plate well (e.g. ``"E4"``) out of an OPALS filename.
-- :func:`ensure_thwc`     — coerce any image array to the ``(T, H, W, C)`` contract.
-- :func:`ensure_label_series` — coerce any mask array to the ``(T, H, W)`` int32 contract.
+- :func:`to_float01`     , the single, dtype-aware image normalizer.
+- :func:`require`        , friendly lazy-import of optional heavy dependencies.
+- :func:`resolve_debug_dir`, pick & create the folder where debug masks are written.
+- :func:`parse_well_id`  , read the plate well (e.g. ``"E4"``) out of an OPALS filename.
+- :func:`ensure_thwc`    , coerce any image array to the ``(T, H, W, C)`` contract.
+- :func:`ensure_label_series`, coerce any mask array to the ``(T, H, W)`` int32 contract.
 """
 
 from __future__ import annotations
@@ -76,7 +76,7 @@ def require(module_name: str, extra: str) -> ModuleType:
     """Import an optional dependency, or raise a friendly, *actionable* error.
 
     Heavy libraries (PyTorch, Cellpose, CellSAM, trackpy, ...) are **not**
-    installed by default — they are opt-in "extras". Backends import them lazily
+    installed by default, they are opt-in "extras". Backends import them lazily
     through this helper so that ``import autopallios`` always works with the
     lightweight baseline stack, and a student who reaches for a model they have
     not installed yet sees *exactly* what to type:
@@ -167,7 +167,7 @@ def parse_well_id(path: str | Path) -> str | None:
 
 
 # ---------------------------------------------------------------------------
-# Shape contracts (the single normalizers — see autopallios._typing)
+# Shape contracts (the single normalizers, see autopallios._typing)
 # ---------------------------------------------------------------------------
 
 
@@ -217,7 +217,7 @@ def ensure_label_series(masks: np.ndarray) -> LabelStack:
     """Coerce a label-mask array into the ``(T, H, W)`` ``int32`` contract.
 
     Accepts a single ``(H, W)`` frame and promotes it to ``(1, H, W)``. Rejects
-    anything with a channel axis — labels never have channels (see the data
+    anything with a channel axis, labels never have channels (see the data
     contract in :mod:`autopallios._typing`).
 
     Args:
@@ -235,7 +235,7 @@ def ensure_label_series(masks: np.ndarray) -> LabelStack:
         arr = arr[np.newaxis, ...]
     elif arr.ndim != 3:
         raise ValueError(
-            f"Label masks must be (H, W) or (T, H, W) — labels carry no channel "
+            f"Label masks must be (H, W) or (T, H, W), labels carry no channel "
             f"axis. Got shape {arr.shape!r}. (Did you accidentally pass raw "
             f"(T, H, W, C) images instead of masks?)"
         )

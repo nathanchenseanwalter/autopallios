@@ -21,7 +21,7 @@ pixi install -e gpu
 
 ## Submit the array
 
-[`segment_array.sbatch`](segment_array.sbatch) runs **one task per well** — the natural
+[`segment_array.sbatch`](segment_array.sbatch) runs **one task per well**, the natural
 unit of parallelism, since one well is one time-series. Edit the `--account`, `--array`
 range, and the data glob, then:
 
@@ -33,11 +33,11 @@ squeue -u $USER
 ## Why `--no-debug` on the cluster
 
 In production we pass `--no-debug` so masks stay in memory and only the final metric tables
-are written. Per-frame TIFF dumps (`debug=True`) are for *local* inspection in Fiji — on a
+are written. Per-frame TIFF dumps (`debug=True`) are for *local* inspection in Fiji, on a
 shared parallel filesystem they create thousands of tiny files and slow everyone down.
 
 ## If under-18 accounts aren't ready
 
 Per the program plan, weeks 1–2 run fine on a laptop or Colab; treat Expanse as the
 Week-3 scale-up demo, and fall back to a shared/mentor allocation if individual accounts
-slip. The pipeline is identical — only the `--account` and where you launch it change.
+slip. The pipeline is identical, only the `--account` and where you launch it change.

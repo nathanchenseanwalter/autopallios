@@ -1,4 +1,4 @@
-"""Cancer cell-death kill-curve recipe — PRODUCTION / HPC run (Week 3-4).
+"""Cancer cell-death kill-curve recipe, PRODUCTION / HPC run (Week 3-4).
 
 Scientific question
 -------------------
@@ -10,13 +10,13 @@ Why ``debug=False`` here
 ------------------------
 This recipe is meant to run unattended on an SDSC Expanse GPU node under Slurm, where
 per-frame TIFF dumps would flood the parallel filesystem. So masks stay strictly IN
-MEMORY (numpy/torch) — the exact opposite of the wound-healing prototyping recipe.
+MEMORY (numpy/torch), the exact opposite of the wound-healing prototyping recipe.
 
 Day-1 run (synthetic 3-channel movie + synthetic ground truth, no GPU, no files)::
 
     python recipes/cancer_cell_death/run_kill_curve.py
 
-Real run — a Live/Dead ``.avi`` loads as a (T, H, W, 3) video; provide a directory of
+Real run, a Live/Dead ``.avi`` loads as a (T, H, W, 3) video; provide a directory of
 hand-labeled ground-truth mask TIFFs::
 
     python recipes/cancer_cell_death/run_kill_curve.py \\
@@ -85,7 +85,7 @@ def main(argv: list[str] | None = None) -> None:
     # 2) ISOLATE the segmentation channel -> (T, H, W, 1). The model only sees one channel.
     seg_input = movie[..., args.channel : args.channel + 1]
 
-    # 3) SEGMENT — debug=False => NOTHING touches disk; masks live only in memory.
+    # 3) SEGMENT, debug=False => NOTHING touches disk; masks live only in memory.
     seg = segmenter.Segmenter(model=args.model, debug=ctx.debug, run_name="kill_curve")
     pred_masks = seg.segment(seg_input, channel_idx=0)  # (T, H, W) int labels, in RAM
 
@@ -95,10 +95,10 @@ def main(argv: list[str] | None = None) -> None:
     # 5) SUPERVISED BENCHMARK vs ground truth -> IoU + F1 + count-error tables.
     result = evaluation.SupervisedMetrics(iou_match_threshold=0.5).evaluate(pred_masks, gt_masks)
 
-    # 6) REPORT — per-frame + aggregate to stdout, and CSVs (the validation artifact).
-    print("\nSupervised benchmark — per frame (vs ground truth):")
+    # 6) REPORT, per-frame + aggregate to stdout, and CSVs (the validation artifact).
+    print("\nSupervised benchmark, per frame (vs ground truth):")
     print(result["per_frame"].to_string(index=False))
-    print("\nSupervised benchmark — aggregate:")
+    print("\nSupervised benchmark, aggregate:")
     print(result["aggregate"].to_string(index=False))
 
     ctx.save_table(result["per_frame"], "supervised_per_frame.csv")

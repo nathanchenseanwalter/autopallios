@@ -1,18 +1,18 @@
-"""Scoring the segmentation — honestly, with or without ground truth.
+"""Scoring the segmentation, honestly, with or without ground truth.
 
 Two worlds:
 
 - **Supervised** (you have hand-labeled ground truth): :class:`SupervisedMetrics`
   reports IoU, F1/Dice, and object-count error. This is how Week-2/4 prove the model
   beats the baseline.
-- **Unsupervised / no-reference** (raw, unlabeled experiments — the common case):
+- **Unsupervised / no-reference** (raw, unlabeled experiments, the common case):
   :class:`UnsupervisedMetrics` reports four *proxies* for quality, and
   :class:`BlindEvaluationExporter` lets a human blind-score two models head to head.
 
 Every public method returns a tidy :class:`pandas.DataFrame` (or a dict of them),
 ready to plot.
 
-⭐ Adding a new metric? See :data:`METRIC_REGISTRY` at the bottom — that is the one
+Adding a new metric? See :data:`METRIC_REGISTRY` at the bottom, that is the one
 place to register a metric so recipes and docs can find it by name.
 """
 
@@ -43,7 +43,7 @@ def _semantic_iou(pred: np.ndarray, true: np.ndarray) -> float:
 
 
 def _pixel_dice(pred: np.ndarray, true: np.ndarray) -> float:
-    """Pixel Dice 2|P∩G| / (|P| + |G|) — distinct from the *instance* F1 below."""
+    """Pixel Dice 2|P∩G| / (|P| + |G|), distinct from the *instance* F1 below."""
     p = pred > 0
     g = true > 0
     denom = p.sum() + g.sum()
@@ -55,7 +55,7 @@ class SupervisedMetrics:
 
     The matching strategy (and why):
 
-    - **Semantic IoU / pixel Dice** treat the masks as plain foreground/background —
+    - **Semantic IoU / pixel Dice** treat the masks as plain foreground/background,
       "did we find the cell material?".
     - **Instance F1** counts *objects*. We greedily match predicted to true instances
       at ``IoU >= iou_match_threshold`` (0.5). At 0.5 each true object matches at most
@@ -144,6 +144,125 @@ class SupervisedMetrics:
             ]
         )
         return {"per_frame": per_frame, "aggregate": aggregate}
+
+
+# ===========================================================================
+# Ranking metrics: PR curve, Average Precision, ROC AUC
+# ---------------------------------------------------------------------------
+# The metrics above score *one* threshold (a mask is a mask). But a detector
+# usually emits a *confidence* per object, and the honest question is "how good
+# is it across all thresholds?", that is the PR curve and its two summary
+# numbers. We teach these first on plain 1-D scores (no images) so the formula,
+# not the pixels, is the lesson (Week 2, `05_pr_curve_and_auc`).
+# ===========================================================================
+
+
+def _check_scores_labels(scores: np.ndarray, labels: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Coerce/validate a (scores, binary-labels) pair to two equal-length 1-D arrays."""
+    scores = np.asarray(scores, dtype=float).ravel()
+    labels = np.asarray(labels).ravel()
+    if scores.shape != labels.shape:
+        raise ValueError(
+            f"scores {scores.shape} and labels {labels.shape} must be the same length."
+        )
+    labels = labels.astype(int)
+    if labels.size and not np.isin(labels, (0, 1)).all():
+        raise ValueError("labels must be binary (0 = negative, 1 = positive).")
+    return scores, labels
+
+
+def _binary_clf_curve(
+    scores: np.ndarray, labels: np.ndarray
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Cumulative (fp, tp, threshold) as the decision threshold sweeps high → low.
+
+    Sort by score descending and, at each distinct score, count how many of the
+    items so far (predicted positive) are true/false positives. This is the one
+    primitive under both the PR curve and the ROC curve.
+    """
+    scores, labels = _check_scores_labels(scores, labels)
+    order = np.argsort(scores, kind="mergesort")[::-1]
+    scores, labels = scores[order], labels[order]
+    # Keep only the last index of each run of equal scores (a real threshold boundary).
+    distinct = np.where(np.diff(scores))[0]
+    idx = np.r_[distinct, scores.size - 1] if scores.size else np.array([], dtype=int)
+    tps = np.cumsum(labels)[idx] if scores.size else np.array([], dtype=int)
+    fps = 1 + idx - tps if scores.size else np.array([], dtype=int)
+    return fps, tps, scores[idx] if scores.size else np.array([], dtype=float)
+
+
+def pr_curve(scores: np.ndarray, labels: np.ndarray) -> pd.DataFrame:
+    """Precision and recall at every decision threshold (the precision-recall curve).
+
+    For each threshold, predict "positive" when ``score >= threshold`` and compute
+    ``precision = TP / (TP + FP)`` and ``recall = TP / (TP + FN)``. Sweeping the
+    threshold from high to low traces the curve.
+
+    Args:
+        scores: 1-D confidence scores (any real numbers; higher = more positive).
+        labels: 1-D binary ground truth (0 = negative, 1 = positive), same length.
+
+    Returns:
+        A DataFrame ordered by descending ``threshold`` with columns ``threshold``,
+        ``precision``, ``recall``, ``tp``, ``fp``, one row per distinct threshold.
+    """
+    fps, tps, thr = _binary_clf_curve(scores, labels)
+    n_pos = int(tps[-1]) if tps.size else 0
+    precision = tps / np.maximum(tps + fps, 1)
+    recall = tps / n_pos if n_pos else np.zeros_like(tps, dtype=float)
+    return pd.DataFrame(
+        {"threshold": thr, "precision": precision, "recall": recall, "tp": tps, "fp": fps}
+    )
+
+
+def average_precision(scores: np.ndarray, labels: np.ndarray) -> float:
+    """Area under the precision-recall curve (AP), summed as recall-weighted precision.
+
+    ``AP = Σ_k (R_k − R_{k−1}) · P_k`` over thresholds ``k`` (the step-rule area, the
+    same convention scikit-learn uses). A perfect ranking, every positive scored above
+    every negative, gives ``AP = 1.0``.
+
+    Args:
+        scores: 1-D confidence scores.
+        labels: 1-D binary ground truth, same length.
+
+    Returns:
+        Average precision in ``[0, 1]`` (``0.0`` if there are no positives).
+    """
+    curve = pr_curve(scores, labels)
+    recall = curve["recall"].to_numpy()
+    precision = curve["precision"].to_numpy()
+    if recall.size == 0:
+        return 0.0
+    d_recall = np.diff(np.r_[0.0, recall])
+    return float(np.sum(d_recall * precision))
+
+
+def roc_auc(scores: np.ndarray, labels: np.ndarray) -> float:
+    """Area under the ROC curve (true-positive rate vs. false-positive rate).
+
+    Sweeps the threshold to trace ``(FPR, TPR)`` from ``(0, 0)`` to ``(1, 1)`` and
+    integrates by the trapezoidal rule. Equivalently, this is the probability that a
+    random positive outscores a random negative: ``1.0`` = perfect ranking,
+    ``0.5`` = chance, ``0.0`` = perfectly wrong.
+
+    Args:
+        scores: 1-D confidence scores.
+        labels: 1-D binary ground truth, same length.
+
+    Returns:
+        ROC AUC in ``[0, 1]``, or ``nan`` if either class is absent (AUC is undefined).
+    """
+    fps, tps, _ = _binary_clf_curve(scores, labels)
+    if tps.size == 0:
+        return float("nan")
+    n_pos, n_neg = int(tps[-1]), int(fps[-1])
+    if n_pos == 0 or n_neg == 0:
+        return float("nan")
+    tpr = np.r_[0.0, tps / n_pos]
+    fpr = np.r_[0.0, fps / n_neg]
+    # Trapezoidal area, written out to avoid the np.trapz/np.trapezoid naming churn.
+    return float(np.sum(np.diff(fpr) * (tpr[1:] + tpr[:-1]) / 2))
 
 
 # ===========================================================================
@@ -253,7 +372,7 @@ class UnsupervisedMetrics:
     def morphological_anomaly_rate(self, measurements: pd.DataFrame) -> dict[str, pd.DataFrame]:
         """Fraction of objects that violate biological shape priors.
 
-        Flags impossible shapes/sizes — the direct proxy for "debris or a plate
+        Flags impossible shapes/sizes, the direct proxy for "debris or a plate
         scratch leaked into the segmentation."
 
         Args:
@@ -313,7 +432,7 @@ class UnsupervisedMetrics:
         """Where do two independent models agree, with no ground truth?
 
         Greedily matches instances between two models' masks per frame. Where they
-        agree you can trust the result without a human label — a powerful idea.
+        agree you can trust the result without a human label, a powerful idea.
 
         Args:
             masks_a: ``(T, H, W)`` labels from model A.
@@ -386,8 +505,8 @@ class UnsupervisedMetrics:
 class BlindEvaluationExporter:
     """Export randomized, identity-masked A/B overlays for blind human scoring.
 
-    For each chosen frame it renders two side-by-side panels — each model's mask drawn
-    on the raw image — with the left/right (A/B) assignment randomized and the model
+    For each chosen frame it renders two side-by-side panels, each model's mask drawn
+    on the raw image, with the left/right (A/B) assignment randomized and the model
     names hidden. A human scores "A" vs "B" without knowing which is which; the held-back
     key file lets you un-blind afterwards. This mirrors the ``debug=True`` convention:
     it writes *only* to an explicit ``output_dir`` and writes PNGs (for human eyes).
@@ -411,7 +530,7 @@ class BlindEvaluationExporter:
 
         Args:
             raw_images: ``(T, H, W, C)`` raw images (background for the overlays).
-            model_masks: ``{"model_name": (T, H, W) labels}`` — exactly two models.
+            model_masks: ``{"model_name": (T, H, W) labels}``, exactly two models.
             frames: Which frame indices to export (default: all).
 
         Returns:
@@ -484,7 +603,7 @@ class BlindEvaluationExporter:
 
 
 # ===========================================================================
-# ⭐ STUDENT EXTENSION POINT — ADD A NEW METRIC HERE
+# STUDENT EXTENSION POINT, ADD A NEW METRIC HERE
 # A metric is just a callable that returns a pandas DataFrame. To add one:
 #   1. Write a function (or wrap a method) following the patterns above.
 #   2. Register it in METRIC_REGISTRY so recipes and docs can find it by name.
@@ -493,6 +612,9 @@ METRIC_REGISTRY: dict[str, object] = {
     "semantic_iou": _semantic_iou,
     "pixel_dice": _pixel_dice,
     "supervised": SupervisedMetrics().evaluate,
+    "pr_curve": pr_curve,
+    "average_precision": average_precision,
+    "roc_auc": roc_auc,
     "temporal_consistency": UnsupervisedMetrics().temporal_consistency_score,
     "morphological_anomaly": UnsupervisedMetrics().morphological_anomaly_rate,
     "cross_model_consensus": UnsupervisedMetrics().cross_model_consensus_score,
@@ -505,5 +627,8 @@ __all__ = [
     "UnsupervisedMetrics",
     "ShapePriors",
     "BlindEvaluationExporter",
+    "pr_curve",
+    "average_precision",
+    "roc_auc",
     "METRIC_REGISTRY",
 ]

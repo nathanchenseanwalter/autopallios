@@ -1,8 +1,8 @@
-"""Fabricate synthetic cell movies (with matching ground truth) — no real files needed.
+"""Fabricate synthetic cell movies (with matching ground truth), no real files needed.
 
 This is what makes "everything runs on Day 1" true. Every recipe and every test can
-conjure a realistic ``(T, H, W, C)`` movie of moving cell-like blobs — plus the exact
-label masks that generated them — from a single random seed. Because the labels come
+conjure a realistic ``(T, H, W, C)`` movie of moving cell-like blobs, plus the exact
+label masks that generated them, from a single random seed. Because the labels come
 from the *same* seed as the pixels, the supervised IoU/F1 demo produces *real* numbers,
 not placeholders.
 
@@ -18,7 +18,7 @@ The fabricated scenes deliberately include the things the pipeline must cope wit
 Channel convention for synthetic data: **channel 0 is the "all cells" stain used for
 segmentation** (every cell is bright in it). For 3-channel scenes, channel 1 is the
 live signal and channel 2 is the dead signal. (For *real* Live/Dead AVIs, verify the
-channel mapping before relying on it — see the Week-1 docs.)
+channel mapping before relying on it, see the Week-1 docs.)
 """
 
 from __future__ import annotations
@@ -40,7 +40,7 @@ class _MovieSpec:
     channels: int
     centers: np.ndarray  # (T, n_cells, 2) as (y, x)
     radii: np.ndarray  # (n_cells,)
-    dies: np.ndarray  # (n_cells,) bool — does this cell die?
+    dies: np.ndarray  # (n_cells,) bool, does this cell die?
     death_time: np.ndarray  # (n_cells,) frame at which it dies
     debris: np.ndarray  # (n_debris, 2) static (y, x)
     artifact_line: tuple[int, int, int] | None  # (row, col_start, col_end) or None
@@ -232,7 +232,7 @@ def make_labels(
 
 
 def make_movie_with_labels(**kwargs) -> tuple[np.ndarray, np.ndarray]:
-    """Return ``(movie, labels)`` from one seed — the single call powering supervised demos/tests."""
+    """Return ``(movie, labels)`` from one seed, the single call powering supervised demos/tests."""
     spec = _build_spec(
         kwargs.get("n_frames", 12),
         kwargs.get("size", DEFAULT_SIZE),

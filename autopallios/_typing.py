@@ -1,10 +1,10 @@
 """Shared type aliases and the *data contracts* every module in autopallios obeys.
 
 This file is intentionally tiny. Its job is to give one, central place where the
-fundamental shapes of the data are written down — so that when you read any other
+fundamental shapes of the data are written down, so that when you read any other
 module, you already know what its arrays look like.
 
-The contracts (memorize these — they remove a whole class of bugs)
+The contracts (memorize these, they remove a whole class of bugs)
 ------------------------------------------------------------------
 1. **Raw images are always 4D: ``(T, H, W, C)``.**
    - ``T`` = time (number of frames),
@@ -17,7 +17,7 @@ The contracts (memorize these — they remove a whole class of bugs)
 
 2. **Label masks are always 3D: ``(T, H, W)`` of integers (``int32``).**
    - ``0`` means background.
-   - ``1, 2, 3, ...`` are *instance IDs* — one number per cell, *within that frame*.
+   - ``1, 2, 3, ...`` are *instance IDs*, one number per cell, *within that frame*.
    After tracking, that integer becomes a globally-consistent ``track_id`` so the
    same cell keeps the same number across every frame.
 
@@ -25,7 +25,7 @@ The contracts (memorize these — they remove a whole class of bugs)
    A label is a label no matter how many colors went into producing it, and every
    downstream consumer (``regionprops``, tracking, evaluation) wants exactly this.
 
-These aliases are just ``numpy.ndarray`` under the hood — they carry no runtime
+These aliases are just ``numpy.ndarray`` under the hood, they carry no runtime
 behavior. They exist to make function signatures read like sentences:
 ``def segment(images: Image4D) -> LabelStack``.
 """

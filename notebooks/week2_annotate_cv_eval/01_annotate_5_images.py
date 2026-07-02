@@ -19,9 +19,9 @@
 # The model can only be *scored* against cells a human called real. This notebook is about
 # making that ground truth. The key idea is the **format**, not the drawing tool:
 #
-# > A hand label is a single `(H, W)` **integer** image: `0` is background, `1, 2, 3, …`
+# > A hand label is a single `(H, W)` **integer** image: `0` is background, `1, 2, 3, ...`
 # > are the cells you outlined. That is the *exact* same thing `SupervisedMetrics` and
-# > `iou_matrix` consume — so your labels drop straight into the scoring code.
+# > `iou_matrix` consume, so your labels drop straight into the scoring code.
 #
 # `autopallios.data.annotations` is the validated load/save layer for these files.
 
@@ -36,7 +36,7 @@ from autopallios.data.annotations import load_annotation, save_annotation, valid
 # ## What a label looks like
 #
 # Until the real well + tool are chosen (see the runbook), we use a synthetic frame so this
-# notebook runs for everyone today. A label is just a labeled image — here, one integer per
+# notebook runs for everyone today. A label is just a labeled image, here, one integer per
 # cell. `validate_annotation` enforces the contract (2D, integer, `0` = background).
 
 # %%
@@ -53,7 +53,7 @@ viz.show_overlay(movie, example_label, frame=0, title="a hand label = colored ce
 # %% [markdown]
 # ## Annotating in your tool (recorded tutorial)
 #
-# > **TODO (pending tool decision — see the Mentor Runbook):** the click-by-click steps for
+# > **TODO (pending tool decision, see the Mentor Runbook):** the click-by-click steps for
 # > **napari** (recommended) or Fiji go here, with the recorded walkthrough link. The
 # > workflow is the same regardless of tool: open a frame → paint each cell a different
 # > integer id → export a label image → save it with the cell below.
@@ -78,9 +78,9 @@ for p in saved:
 # Reload one to prove the round-trip and the contract hold.
 reloaded = load_annotation(saved[0])
 assert np.array_equal(reloaded, example_label[0].astype(np.int32))
-print("✅ labels saved and reload cleanly in the gold format")
+print("labels saved and reload cleanly in the gold format")
 
 # %% [markdown]
 # **Next:** in `02_classic_cv_baseline` you build the segmenter, then in
 # `03_implement_iou` / `04_precision_recall_f1` you score it against the labels you just
-# made — the whole point of annotating.
+# made, the whole point of annotating.

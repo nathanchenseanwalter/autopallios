@@ -1,10 +1,10 @@
-"""TEMPLATE recipe — copy this whole folder to ``recipes/<application>/<yourname>/``.
+"""TEMPLATE recipe, copy this whole folder to ``recipes/<application>/<yourname>/``.
 
 A "recipe" is one self-contained experiment script. It wires the reusable library
 (``autopallios.core`` + ``autopallios.modules``) together for ONE biological question.
 You only edit the marked sections; the library does the heavy lifting.
 
-Run it right now, before changing anything — it fabricates a synthetic movie and runs
+Run it right now, before changing anything, it fabricates a synthetic movie and runs
 the whole pipeline end to end::
 
     python recipes/_template/run_experiment.py
@@ -44,14 +44,14 @@ def main(argv: list[str] | None = None) -> None:
     # 2) DATA: real file if present, else a synthetic movie. Always (T, H, W, C).
     movie = resolve_or_mock(real_path=data_path, kind=SCENE, ctx=ctx)
 
-    # 3) SEGMENT — the core engine. The debug flag flows from ctx.
+    # 3) SEGMENT, the core engine. The debug flag flows from ctx.
     seg = segmenter.Segmenter(model="mock", debug=ctx.debug, output_dir=ctx.masks_dir)
     masks = seg.segment(movie, channel_idx=0)  # (T, H, W) int labels
 
     # 4) FILTER artifacts (debris / scratches); keep the receipt.
     masks, report = artifact_filter.ArtifactFilter().apply(masks)
 
-    # 5) ANALYZE — pick the modules your science needs. (Tracking shown as an example.)
+    # 5) ANALYZE, pick the modules your science needs. (Tracking shown as an example.)
     tracks = tracking.track(masks)
     # ... add intensity / evaluation here ...
 

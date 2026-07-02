@@ -220,6 +220,10 @@ __marimo__/
 # ---------------------------------------------------------------------------
 # autopallios-specific
 # ---------------------------------------------------------------------------
+# Private mentor contacts (Hua's email, evening office-hours) — never commit to this public
+# repo. Copy MENTORS_PRIVATE.example.md -> MENTORS_PRIVATE.md and fill it in locally.
+MENTORS_PRIVATE.md
+
 # Recipe run outputs — never commit results / intermediate masks / figures.
 # (Ignore the contents, not the folder, so the .gitkeep placeholder stays tracked.)
 recipes/**/output/*

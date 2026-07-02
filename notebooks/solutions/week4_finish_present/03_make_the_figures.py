@@ -14,7 +14,7 @@
 # # Week 4 · Make the figures
 #
 # **Reading:** *Finish & present* chapter.
-# **Deliverable:** the poster figures — a result-over-time curve, tracks, and an error map.
+# **Deliverable:** the poster figures, a result-over-time curve, tracks, and an error map.
 #
 # A poster is three or four figures that tell the story. We make them from one synthetic
 # migration well; swap in your real run and the code is unchanged.
@@ -33,7 +33,7 @@ movie, truth = synthetic.make_movie_with_labels(
 pred = BaselineSegmenter().segment(movie, channel_idx=0)
 
 # %% [markdown]
-# ## Figure 1 — cell count over time (the quantitative result)
+# ## Figure 1, cell count over time (the quantitative result)
 
 # %%
 counts = [int(pred[t].max()) for t in range(pred.shape[0])]
@@ -45,7 +45,7 @@ ax.set_title("detected cell count over time")
 plt.show()
 
 # %% [markdown]
-# ## Figure 2 — tracks (cells followed across frames)
+# ## Figure 2, tracks (cells followed across frames)
 
 # %%
 result = tracking.track(pred, max_distance=25)
@@ -54,7 +54,7 @@ viz.plot_tracks(result)
 plt.show()
 
 # %% [markdown]
-# ## Figure 3 — where we're right and wrong (TP / FP / FN)
+# ## Figure 3, where we're right and wrong (TP / FP / FN)
 
 # %%
 viz.compare(pred, truth, frame=0)
@@ -62,5 +62,5 @@ plt.show()
 
 # %% [markdown]
 # **For the poster:** pair each figure with one sentence of interpretation, and put your
-# validation numbers (Week-4 study) next to Figure 1. That's the story — from "images are
+# validation numbers (Week-4 study) next to Figure 1. That's the story, from "images are
 # numbers" to a measured, validated result.

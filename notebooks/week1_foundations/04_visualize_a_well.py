@@ -15,7 +15,7 @@
 #
 # **Reading:** *Foundations* chapter.
 # **Deliverable:** plot every frame of a well **and** its per-frame pixel-intensity
-# histograms. This is your Week-1 bar: load a well, show it, describe it — no segmentation yet.
+# histograms. This is your Week-1 bar: load a well, show it, describe it, no segmentation yet.
 
 # %%
 import matplotlib.pyplot as plt
@@ -37,7 +37,7 @@ viz.montage(well, max_cols=3)
 plt.show()
 
 # %% [markdown]
-# ## Pixel histograms — the well as a distribution
+# ## Pixel histograms, the well as a distribution
 #
 # A histogram of pixel brightness is the simplest "metric" before segmentation: it tells
 # you the background level, how bright the cells are, and whether that drifts over time.

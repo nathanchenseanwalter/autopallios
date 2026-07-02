@@ -18,7 +18,7 @@
 #
 # In Week 2 you matched predicted cells to *true* cells in one frame (greedy IoU). Tracking
 # is the same matching idea on a new axis: match a cell in frame *t* to the closest cell in
-# frame *t−1* (nearest-centroid + a distance "gate"). This is the optional extension — strong
+# frame *t−1* (nearest-centroid + a distance "gate"). This is the optional extension, strong
 # students can compare greedy **nearest** matching to optimal **Hungarian** assignment by
 # flipping one flag.
 
@@ -51,12 +51,12 @@ print(f"artifact filter removed {removed} objects (debris / scratch fragments)")
 # %%
 near = tracking.track(filtered, max_distance=25, backend="nearest")
 hung = tracking.track(filtered, max_distance=25, backend="hungarian")
-print(f"tracks — nearest: {near.n_tracks} | hungarian: {hung.n_tracks}")
+print(f"tracks, nearest: {near.n_tracks} | hungarian: {hung.n_tracks}")
 
 viz.plot_tracks(near)
 plt.show()
 
 # %% [markdown]
 # **Compare:** do the two backends find the same number of tracks here? On crowded, fast
-# movies Hungarian usually wins (greedy can "steal" a match). That trade-off — simple vs.
-# optimal — is the lesson.
+# movies Hungarian usually wins (greedy can "steal" a match). That trade-off, simple vs.
+# optimal, is the lesson.
