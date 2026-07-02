@@ -9,17 +9,38 @@ understanding: each week is a set of notebooks that runs top to bottom and print
 pixi run -e teach lab        # opens JupyterLab on this folder
 ```
 
-The notebooks are stored as percent-format `.py` files (clean diffs, code review). When
-you open one in JupyterLab it pairs to an `.ipynb` automatically (jupytext); the `.ipynb`
-is disposable and git-ignored. **Commit the `.py`.**
+Every notebook is committed in **two formats**:
+
+- **`.ipynb`** — the notebook you open and run in JupyterLab, straight from a fresh
+  `git clone` with no conversion step.
+- **`.py`** (percent format) — the same notebook as a plain script: clean diffs, lintable,
+  and what mentors review. This is the **source of truth**.
+
+`pixi run build-notebooks` rebuilds each `.ipynb` from its `.py` (outputs stripped); editing
+a notebook in JupyterLab syncs the pair back the other way through jupytext. **Commit both.**
+
+### Convert between the two yourself
+
+Learn to do this by hand as well, it's how a notebook becomes a script other code can
+import. The commands:
+
+```bash
+jupytext --to py:percent 03_implement_iou.ipynb    # notebook -> script
+jupytext --to notebook   03_implement_iou.py       # script   -> notebook
+jupyter nbconvert --to script 03_implement_iou.ipynb   # the nbconvert way (-> .py)
+jupytext --sync          03_implement_iou.ipynb    # update whichever twin is stale
+```
+
+It's also the first move in promoting a notebook function into the shared, tested library,
+see [From notebook to library](../docs/from_notebook_to_library.md).
 
 ## Work in your own folder
 
 Copy the notebook you're on into your own subfolder so six people never collide:
 
 ```bash
-cp notebooks/week2_annotate_cv_eval/03_implement_iou.py \
-   notebooks/week2_annotate_cv_eval/<your_name>/03_implement_iou.py
+cp notebooks/week2_annotate_cv_eval/03_implement_iou.ipynb \
+   notebooks/week2_annotate_cv_eval/<your_name>/03_implement_iou.ipynb
 ```
 
 ## How a notebook is graded
@@ -52,13 +73,17 @@ notebooks/
 
 ## For mentors
 
-Author the full, working notebook under `notebooks/solutions/<week>/`, mark the student
-exercises (`# >>> exercise ... # <<< exercise`, or a `# %% [exercise]` cell), then run:
+Author the full, working notebook under `notebooks/solutions/<week>/` as a percent `.py`,
+mark the student exercises (`# >>> exercise ... # <<< exercise`, or a `# %% [exercise]`
+cell), then run:
 
 ```bash
-pixi run build-notebooks            # regenerate the student copies from solutions/
-pixi run build-notebooks --check    # CI: fail if a student copy is stale
+pixi run build-notebooks            # regenerate student .py + all .ipynb twins from solutions/
+pixi run build-notebooks --check    # CI: fail if any generated notebook is stale
 ```
+
+That one command writes the student `.py`, the student `.ipynb`, and the solution `.ipynb`
+(all output-stripped and deterministic). You only ever hand-edit the solution `.py`.
 
 See [`tools/make_student_version.py`](../tools/make_student_version.py) for the marker
 syntax.

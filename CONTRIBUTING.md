@@ -23,9 +23,10 @@ If `pixi run demo` prints a table and writes an `output/` folder, you're ready.
 
    **Notebooks work the same way.** The weekly notebooks live under `notebooks/<week>/`;
    copy the one you're on into `notebooks/<week>/<your_name>/` and work there. Open them
-   with `pixi run -e teach lab`. Commit the percent-format `.py` (clean diffs, reviewable)
-  , the `.ipynb` twin is generated and git-ignored. Mentors author the answer keys under
-   `notebooks/solutions/` and run `pixi run build-notebooks` to regenerate the student copies.
+   with `pixi run -e teach lab`. Each notebook is committed in both formats, the `.ipynb`
+   you open and its percent-format `.py` twin (clean diffs, reviewable), so commit both.
+   Mentors author the answer keys under `notebooks/solutions/` as percent `.py` and run
+   `pixi run build-notebooks` to regenerate the student `.py` and every `.ipynb` twin.
 
 2. **Dependencies point one way: `core → modules → recipes`.**
    - `core/` may **not** import `modules/` or `recipes/`.

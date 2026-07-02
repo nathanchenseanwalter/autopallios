@@ -15,5 +15,7 @@ jobs:
           cache: true
       - name: Lint
         run: pixi run -e dev lint
+      - name: Notebooks in sync (student .py + .ipynb twins generated from solutions/)
+        run: pixi run -e dev build-notebooks --check
       - name: Test (mock data only — no GPU, no torch, no real files)
         run: pixi run -e dev test
