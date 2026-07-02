@@ -6,6 +6,15 @@ cell *fragments*) that students should write themselves, and this tool strips th
 regions down to a ``# TODO`` + ``raise NotImplementedError``, producing the student copy
 under ``notebooks/`` with an identical path tail. Edit the solution, re-run this, done.
 
+Every notebook ships in two formats, kept in sync by this tool:
+
+* the percent-format ``.py`` — the source of truth (clean diffs, lintable, code review);
+* a committed ``.ipynb`` twin — what students open in JupyterLab, and what GitHub renders.
+
+The ``.ipynb`` is generated from the ``.py`` (outputs stripped, deterministic cell ids), so
+a fresh clone has working notebooks with no conversion step. Students still convert by hand
+as an exercise, but nobody has to before they can open a notebook.
+
 Two ways to mark an exercise inside a solution ``.py``:
 
 1. **A fragment of a cell**, wrap the lines students must write::
@@ -32,8 +41,8 @@ Two ways to mark an exercise inside a solution ``.py``:
 
 Run it::
 
-    pixi run build-notebooks            # regenerate the student notebooks
-    pixi run build-notebooks --check    # CI: fail if a student notebook is stale (drift)
+    pixi run build-notebooks            # regenerate the student notebooks (.py + .ipynb)
+    pixi run build-notebooks --check    # CI: fail if any generated notebook is stale (drift)
 
 (For centralized autograding with per-student feedback, ``nbgrader`` is the heavier
 alternative, overkill for one repo shared by six students, so we don't use it.)
@@ -110,33 +119,117 @@ def strip_exercises(source: str) -> str:
     return text
 
 
+def _untag_exercise_headers(source: str) -> str:
+    """Turn ``# %% [exercise] hint`` headers into plain ``# %%`` cells.
+
+    The ``[exercise]`` tag is meaningful only to :func:`strip_exercises`; it is not a valid
+    notebook cell type. In a *solution* the answer is already present, so for rendering we
+    just drop the tag, leaving a normal code cell. Inline ``# >>> exercise`` markers are
+    ordinary comments and are kept as-is (they show mentors the exercise boundaries).
+
+    Args:
+        source: The full text of a solution ``.py`` (percent format).
+
+    Returns:
+        The same text with every ``[exercise]`` cell tag removed from its header.
+    """
+    out: list[str] = []
+    for line in source.splitlines():
+        stripped = line.strip()
+        if stripped.startswith(_CELL_MARK) and _CELL_EXERCISE in stripped:
+            line = line.replace(f" {_CELL_EXERCISE}", "").replace(_CELL_EXERCISE, "").rstrip()
+        out.append(line)
+    text = "\n".join(out)
+    if source.endswith("\n"):
+        text += "\n"
+    return text
+
+
+def percent_to_ipynb(py_text: str) -> str:
+    """Render percent-format ``.py`` text as a clean, deterministic ``.ipynb`` document.
+
+    The result is a plain notebook (no jupytext round-trip metadata), with all outputs
+    stripped and stable, index-based cell ids — so re-running the build produces a
+    byte-identical file and ``--check`` can detect real drift rather than churn.
+
+    Args:
+        py_text: Percent-format notebook source (already exercise-stripped for students,
+            or untagged for solutions).
+
+    Returns:
+        The serialized ``.ipynb`` JSON, newline-terminated.
+
+    Raises:
+        SystemExit: If jupytext / nbformat are not importable (run under a pixi env).
+    """
+    try:
+        import jupytext
+        import nbformat
+    except ModuleNotFoundError as exc:  # pragma: no cover - environment guard
+        raise SystemExit(
+            f"build-notebooks needs '{exc.name}' to render .ipynb twins. "
+            "Run it through pixi, e.g. `pixi run build-notebooks`."
+        ) from exc
+
+    nb = jupytext.reads(py_text, fmt="py:percent")
+    nb.metadata.pop("jupytext", None)  # keep the .ipynb standalone, not a jupytext twin
+    nb.nbformat, nb.nbformat_minor = 4, 5
+    for index, cell in enumerate(nb.cells):
+        cell["id"] = f"cell-{index}"  # deterministic ids => stable diffs & meaningful --check
+        cell.get("metadata", {}).pop("lines_to_next_cell", None)
+        if cell.get("cell_type") == "code":
+            cell["outputs"] = []
+            cell["execution_count"] = None
+
+    text = nbformat.writes(nb, version=4)
+    return text if text.endswith("\n") else text + "\n"
+
+
+def _artifacts_for(solution: Path, solutions_dir: Path, out_dir: Path) -> dict[Path, str]:
+    """Compute every generated file for one solution ``.py`` as ``{dest: content}``.
+
+    Produces the student ``.py`` (exercises blanked), the student ``.ipynb`` twin, and the
+    solution ``.ipynb`` twin (rendered in place beside the solution source).
+    """
+    rel = solution.relative_to(solutions_dir)
+    source = solution.read_text(encoding="utf-8")
+    student_py = strip_exercises(source)
+    return {
+        out_dir / rel: student_py,
+        (out_dir / rel).with_suffix(".ipynb"): percent_to_ipynb(student_py),
+        solution.with_suffix(".ipynb"): percent_to_ipynb(_untag_exercise_headers(source)),
+    }
+
+
 def build(solutions_dir: Path, out_dir: Path, *, check: bool) -> tuple[list[Path], list[Path]]:
-    """Generate (or, in ``check`` mode, verify) every student notebook.
+    """Generate (or, in ``check`` mode, verify) every generated notebook artifact.
+
+    For each solution ``.py`` this writes the student ``.py``, the student ``.ipynb``, and
+    the solution ``.ipynb`` (the solution ``.py`` itself is the source and never written).
 
     Args:
         solutions_dir: Directory of solution ``.py`` files (searched recursively).
-        out_dir: Directory the student ``.py`` files are written under (mirroring the path
-            tail relative to ``solutions_dir``).
+        out_dir: Directory the student files are written under (mirroring the path tail
+            relative to ``solutions_dir``).
         check: If ``True``, do not write, only report which destinations are missing or
             stale relative to what would be generated.
 
     Returns:
-        ``(written, drift)`` as lists of destination paths relative to ``out_dir``.
+        ``(written, drift)`` as lists of destination paths relative to the repo root.
     """
     written: list[Path] = []
     drift: list[Path] = []
     for solution in sorted(solutions_dir.rglob("*.py")):
-        rel = solution.relative_to(solutions_dir)
-        dest = out_dir / rel
-        student = strip_exercises(solution.read_text(encoding="utf-8"))
-        if check:
-            current = dest.read_text(encoding="utf-8") if dest.exists() else None
-            if current != student:
-                drift.append(rel)
-        else:
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            dest.write_text(student, encoding="utf-8")
-            written.append(rel)
+        for dest, content in _artifacts_for(solution, solutions_dir, out_dir).items():
+            rel_to_root = dest.relative_to(ROOT) if dest.is_relative_to(ROOT) else dest
+            if check:
+                current = dest.read_text(encoding="utf-8") if dest.exists() else None
+                if current != content:
+                    drift.append(rel_to_root)
+            else:
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                dest.write_text(content, encoding="utf-8")
+                written.append(rel_to_root)
     return written, drift
 
 
@@ -146,7 +239,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--check",
         action="store_true",
-        help="Verify student notebooks are up to date instead of writing them (CI mode).",
+        help="Verify generated notebooks are up to date instead of writing them (CI mode).",
     )
     parser.add_argument("--solutions-dir", type=Path, default=SOLUTIONS_DIR)
     parser.add_argument("--out-dir", type=Path, default=OUT_DIR)
@@ -160,16 +253,16 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.check:
         if drift:
-            print("Student notebooks are STALE, run `pixi run build-notebooks`:")
+            print("Generated notebooks are STALE, run `pixi run build-notebooks`:")
             for rel in drift:
                 print(f"  - {rel}")
             return 1
-        print("Student notebooks are up to date.")
+        print("Generated notebooks are up to date.")
         return 0
 
     for rel in written:
-        print(f"wrote notebooks/{rel}")
-    print(f"Generated {len(written)} student notebook(s) from {args.solutions_dir}.")
+        print(f"wrote {rel}")
+    print(f"Generated {len(written)} file(s) from {args.solutions_dir}.")
     return 0
 
 

@@ -102,8 +102,10 @@ testpaths = ["tests"]
 addopts = "-q"
 
 [tool.jupytext]
-# Notebooks are authored as percent-format .py (clean diffs, lintable, reviewable).
-# The .ipynb twin is generated on open and git-ignored — the .py is the source of truth.
+# Notebooks are authored as percent-format .py (clean diffs, lintable, reviewable); the
+# .ipynb twin is generated and committed by `pixi run build-notebooks` (outputs stripped),
+# so a fresh clone already has them. This pairing also lets JupyterLab keep the two in
+# sync when you edit a notebook interactively — the .py stays the source of truth.
 formats = "ipynb,py:percent"
 
 [tool.pixi.workspace]
@@ -113,6 +115,11 @@ platforms = ["linux-64", "osx-arm64"]
 [tool.pixi.dependencies]
 python = "3.13.*"
 pip = "*"
+# jupytext + nbformat live in the base env (not only `teach`) so `pixi run build-notebooks`
+# can render the committed .ipynb twins in every environment, including CI. They are small,
+# pure-Python packages — the heavy Jupyter/Qt stack stays in the `teach` feature below.
+jupytext = "*"
+nbformat = "*"
 
 # Install autopallios itself (editable) into EVERY environment, so recipes, notebooks, and
 # tests can `import autopallios` no matter the working directory (a Jupyter kernel's cwd is
@@ -134,7 +141,7 @@ pytorch = { version = ">=2.2", build = "*cuda*" }
 [tool.pixi.feature.teach.dependencies]
 jupyterlab = "*"
 ipykernel = "*"
-jupytext = "*"
+# jupytext is provided by the base dependencies above (needed for build-notebooks in CI too).
 napari = "*"
 pyqt = "*"
 
@@ -158,4 +165,4 @@ docs = "mkdocs serve"
 docs-build = "mkdocs build --strict"
 gh-deploy = "mkdocs gh-deploy --force"   # build + push the site to the gh-pages branch
 lab = "jupyter lab notebooks/"           # open the notebooks (run in teach: pixi run -e teach lab)
-build-notebooks = "python tools/make_student_version.py"  # regenerate student notebooks from solutions/ (append --check in CI)
+build-notebooks = "python tools/make_student_version.py"  # regenerate student .py + committed .ipynb twins from solutions/ (append --check in CI)

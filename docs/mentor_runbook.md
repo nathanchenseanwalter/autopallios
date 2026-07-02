@@ -18,9 +18,10 @@ get more blanks to implement.
 - **The minimal expectation (all we require on Day 1):** open a terminal, run `pixi run demo`,
   and read a NumPy array's `.shape`. That's the whole prerequisite.
 - **Format:** a self-rated checklist plus 2–3 tiny tasks (~30 min).
-- **Blank density is one lever, one source of truth:** author the full solution once; `pixi run
-  build-notebooks` strips the marked exercises into the student copy. Hand beginners the
-  lighter-blank version; nobody hand-maintains two notebooks.
+- **Blank density is one lever, one source of truth:** author the full solution once (percent
+  `.py`); `pixi run build-notebooks` strips the marked exercises into the student copy and
+  regenerates every `.ipynb` twin. Hand beginners the lighter-blank version; nobody
+  hand-maintains two notebooks.
 
 ## L2 · AI-usage policy
 
