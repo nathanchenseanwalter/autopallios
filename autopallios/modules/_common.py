@@ -1,6 +1,6 @@
 """Small geometry helpers shared by tracking, intensity, and evaluation.
 
-The star of this file is :func:`iou_matrix` — the one Intersection-over-Union
+The star of this file is :func:`iou_matrix`, the one Intersection-over-Union
 primitive reused everywhere (instance matching for F1, cross-model consensus, and
 the optional IoU-based tracking fallback). It is computed in ``O(pixels)`` via a
 co-occurrence count, *not* ``O(N^2)`` polygon math, so it stays fast on full
@@ -67,7 +67,7 @@ def greedy_match(
 
     At a threshold of 0.5 each object can match at most one partner (two regions
     cannot *both* overlap a third by more than half), so greedy matching is provably
-    optimal — which is why we use it here and teach it instead of the heavier
+    optimal, which is why we use it here and teach it instead of the heavier
     Hungarian algorithm.
 
     Args:

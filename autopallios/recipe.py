@@ -1,13 +1,13 @@
-"""Glue every recipe imports — so recipes stay short, uniform, and reproducible.
+"""Glue every recipe imports, so recipes stay short, uniform, and reproducible.
 
 Two helpers:
 
-- :class:`RecipeContext` — creates a tidy, timestamped ``output/`` folder next to your
+- :class:`RecipeContext`, creates a tidy, timestamped ``output/`` folder next to your
   recipe (``masks/``, ``tables/``, ``figures/``), and writes a ``manifest.json`` recording
   exactly how the run was configured (data source, debug flag, seed, git commit). That
-  manifest is what makes the Week-4 validation study credible — every number is traceable.
+  manifest is what makes the Week-4 validation study credible, every number is traceable.
 
-- :func:`resolve_or_mock` — load real data if it's there, otherwise fabricate a synthetic
+- :func:`resolve_or_mock`, load real data if it's there, otherwise fabricate a synthetic
   movie so the recipe *always runs* (Day 1, no real files, no GPU). It announces loudly
   which path it took, so no one mistakes synthetic results for real ones.
 """
@@ -45,7 +45,7 @@ class RecipeContext:
     """A per-run output folder + reproducibility manifest, created next to a recipe.
 
     Args:
-        recipe_file: Pass ``__file__`` from the recipe — output lands beside it.
+        recipe_file: Pass ``__file__`` from the recipe, output lands beside it.
         experiment: Short name for this run (folded into the run folder name).
         debug: Whether this run is in debug mode (recorded; also what gates mask dumps).
         seed: RNG seed recorded for reproducibility.
@@ -125,7 +125,7 @@ def resolve_or_mock(
     mock_kwargs: dict | None = None,
     with_ground_truth: Any = _UNSET,
 ) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
-    """Return real data if available, else a synthetic scene — so a recipe always runs.
+    """Return real data if available, else a synthetic scene, so a recipe always runs.
 
     Args:
         real_path: Path to real data, or ``None`` to force synthetic.
@@ -136,7 +136,7 @@ def resolve_or_mock(
             ``kind="directory"``, ``pattern=...``, ``as_gray=True``).
         mock_kwargs: Extra args for the synthetic generator (e.g. ``n_frames=20``).
         with_ground_truth: Omit it to get back just the movie. Pass it (a path or
-            ``None``) to also get ground-truth labels — returns ``(movie, labels)``.
+            ``None``) to also get ground-truth labels, returns ``(movie, labels)``.
 
     Returns:
         ``movie`` (``(T, H, W, C)``), or ``(movie, labels)`` if ``with_ground_truth`` was passed.
@@ -168,7 +168,7 @@ def resolve_or_mock(
 
     # --- synthetic fallback ---
     source = f"mock:{kind}"
-    print(f"[autopallios] USING MOCK DATA (scene={kind!r}) — no real files found.")
+    print(f"[autopallios] USING MOCK DATA (scene={kind!r}), no real files found.")
     if not wants_gt:
         _record(ctx, source)
         return synthetic.make_scene(kind, **mock_kwargs)

@@ -19,12 +19,12 @@ If `pixi run demo` prints a table and writes an `output/` folder, you're ready.
 1. **Work inside your own folder.** Your experiments live in
    `recipes/<application>/<your_name>/` (copy `recipes/_template/`). Two students never
    edit the same file, so there are no merge conflicts. The library (`autopallios/`) is
-   shared — change it deliberately, with review.
+   shared, change it deliberately, with review.
 
    **Notebooks work the same way.** The weekly notebooks live under `notebooks/<week>/`;
    copy the one you're on into `notebooks/<week>/<your_name>/` and work there. Open them
    with `pixi run -e teach lab`. Commit the percent-format `.py` (clean diffs, reviewable)
-   — the `.ipynb` twin is generated and git-ignored. Mentors author the answer keys under
+  , the `.ipynb` twin is generated and git-ignored. Mentors author the answer keys under
    `notebooks/solutions/` and run `pixi run build-notebooks` to regenerate the student copies.
 
 2. **Dependencies point one way: `core → modules → recipes`.**
@@ -48,7 +48,7 @@ If `pixi run demo` prints a table and writes an `output/` folder, you're ready.
    pixi run fmt && pixi run lint     # ruff format + check (Google-style docstrings)
    pixi run test                     # pytest, CPU-only, seconds
    ```
-   Commit something every day, however small — that's how you learn version control and
+   Commit something every day, however small, that's how you learn version control and
    feel ownership of the project.
 
 ## Adding things
@@ -62,6 +62,6 @@ If `pixi run demo` prints a table and writes an `output/` folder, you're ready.
 
 ## Docstrings
 
-Google-style, and written to *teach* — a high-schooler should be able to learn the
+Google-style, and written to *teach*, a high-schooler should be able to learn the
 concept from the docstring. They are rendered verbatim into the docs, so the textbook and
 the code never drift.

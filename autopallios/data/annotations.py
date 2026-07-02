@@ -1,9 +1,9 @@
-"""Hand annotations — the ground-truth label masks students draw in Week 2.
+"""Hand annotations, the ground-truth label masks students draw in Week 2.
 
 A "hand annotation" is just a label mask for one real frame: a ``(H, W)`` integer image
-where ``0`` is background and ``1, 2, 3, …`` are the cells a human outlined. That is the
+where ``0`` is background and ``1, 2, 3, ...`` are the cells a human outlined. That is the
 *same* contract :class:`~autopallios.modules.evaluation.SupervisedMetrics` and
-:func:`~autopallios.modules._common.iou_matrix` already consume — so a label you draw in
+:func:`~autopallios.modules._common.iou_matrix` already consume, so a label you draw in
 napari/Fiji drops straight into the scoring code with no new format to invent.
 
 Gold examples (a few image+label pairs the cohort trusts) live under ``data/gold/``:
@@ -14,7 +14,7 @@ Gold examples (a few image+label pairs the cohort trusts) live under ``data/gold
 ``data/`` is git-ignored, but ``data/gold/`` is a small, deliberately-tracked exception so a
 fresh clone can score against the gold set. Keep these tiny (a handful of small crops).
 
-This module is the thin, validated load/save layer for those files — it reuses the existing
+This module is the thin, validated load/save layer for those files, it reuses the existing
 ``(T, H, W, C)`` / ``(T, H, W)`` contracts rather than introducing a new one.
 """
 
@@ -82,7 +82,7 @@ def save_annotation(labels: np.ndarray, path: str | Path) -> Path:
     """Validate a ``(H, W)`` label mask and write it to ``path`` as an ``int32`` TIFF.
 
     Unlike :func:`~autopallios.core.io.save_mask_as_tiff` (which writes a *sequence* of
-    ``uint16`` debug frames), this writes a single ``int32`` file — the gold-label format.
+    ``uint16`` debug frames), this writes a single ``int32`` file, the gold-label format.
 
     Args:
         labels: The ``(H, W)`` integer label mask.

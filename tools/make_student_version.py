@@ -1,14 +1,14 @@
-"""Generate the *student* notebooks from the *solution* notebooks — one source of truth.
+"""Generate the *student* notebooks from the *solution* notebooks, one source of truth.
 
 We never hand-maintain two copies of a notebook. A mentor authors the full, working
 solution once under ``notebooks/solutions/`` (percent-format ``.py``), marks the cells (or
 cell *fragments*) that students should write themselves, and this tool strips those marked
-regions down to a ``# TODO`` + ``raise NotImplementedError`` — producing the student copy
+regions down to a ``# TODO`` + ``raise NotImplementedError``, producing the student copy
 under ``notebooks/`` with an identical path tail. Edit the solution, re-run this, done.
 
 Two ways to mark an exercise inside a solution ``.py``:
 
-1. **A fragment of a cell** — wrap the lines students must write::
+1. **A fragment of a cell**, wrap the lines students must write::
 
        def iou(a, b):
            a = a > 0
@@ -22,7 +22,7 @@ Two ways to mark an exercise inside a solution ``.py``:
    Everything *outside* the markers (signature, setup, the grader cell that follows) is
    copied verbatim; everything *between* them becomes the TODO + raise.
 
-2. **A whole cell** — tag the percent cell header::
+2. **A whole cell**, tag the percent cell header::
 
        # %% [exercise] write the precision/recall/F1 formulas
        precision = tp / (tp + fp)
@@ -36,7 +36,7 @@ Run it::
     pixi run build-notebooks --check    # CI: fail if a student notebook is stale (drift)
 
 (For centralized autograding with per-student feedback, ``nbgrader`` is the heavier
-alternative — overkill for one repo shared by six students, so we don't use it.)
+alternative, overkill for one repo shared by six students, so we don't use it.)
 """
 
 from __future__ import annotations
@@ -117,7 +117,7 @@ def build(solutions_dir: Path, out_dir: Path, *, check: bool) -> tuple[list[Path
         solutions_dir: Directory of solution ``.py`` files (searched recursively).
         out_dir: Directory the student ``.py`` files are written under (mirroring the path
             tail relative to ``solutions_dir``).
-        check: If ``True``, do not write — only report which destinations are missing or
+        check: If ``True``, do not write, only report which destinations are missing or
             stale relative to what would be generated.
 
     Returns:
@@ -153,14 +153,14 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if not args.solutions_dir.exists():
-        print(f"No solutions directory at {args.solutions_dir} — nothing to do.")
+        print(f"No solutions directory at {args.solutions_dir}, nothing to do.")
         return 0
 
     written, drift = build(args.solutions_dir, args.out_dir, check=args.check)
 
     if args.check:
         if drift:
-            print("Student notebooks are STALE — run `pixi run build-notebooks`:")
+            print("Student notebooks are STALE, run `pixi run build-notebooks`:")
             for rel in drift:
                 print(f"  - {rel}")
             return 1

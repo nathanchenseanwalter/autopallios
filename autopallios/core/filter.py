@@ -1,9 +1,9 @@
-"""Reject things that cannot be cells — plate scratches, debris, specks.
+"""Reject things that cannot be cells, plate scratches, debris, specks.
 
 The commercial tool famously counts a plate scratch (a long, thin, straight line)
 as if it were a cell. We don't: an object is kept only if its size and shape fall
-inside a sane biological band. Just as importantly, we keep a **receipt** — a
-DataFrame saying what was removed and *why* — so the Viz lead can report
+inside a sane biological band. Just as importantly, we keep a **receipt**, a
+DataFrame saying what was removed and *why*, so the Viz lead can report
 "we rejected N scratches" and the Week-3 lab ("quantify the false positives") is a
 one-liner: ``report.query("not kept").reason.value_counts()``.
 

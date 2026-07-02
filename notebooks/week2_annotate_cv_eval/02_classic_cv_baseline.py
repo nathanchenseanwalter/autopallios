@@ -17,10 +17,10 @@
 # **Deliverable:** run the rule-based segmenter on a well, *see* where it breaks, and
 # capture its three failure modes.
 #
-# Before we teach a neural network anything, we build the "old way" — the same
+# Before we teach a neural network anything, we build the "old way", the same
 # **threshold → clean → watershed → size-filter** pipeline the commercial tool uses. It
 # has a knob for everything and it fails in instructive ways: it merges touching cells and
-# it happily calls a plate scratch a cell. *That failure is the point* — it is what the
+# it happily calls a plate scratch a cell. *That failure is the point*, it is what the
 # deep model in Week 3 has to beat, measured on the metrics you write next.
 
 # %%
@@ -36,7 +36,7 @@ from autopallios.modules.evaluation import SupervisedMetrics
 #
 # We fabricate a migration-assay well: cells crawling into a wound band, plus some debris
 # specks and a thin bright "scratch" line. Because it is synthetic, we also get the exact
-# ground-truth labels for free — so later we can score the baseline honestly.
+# ground-truth labels for free, so later we can score the baseline honestly.
 
 # %%
 movie, truth = synthetic.make_movie_with_labels(
@@ -72,7 +72,7 @@ plt.show()
 # ## 3. Where does it break?
 #
 # Compare the predicted object count to the truth. The debris specks and the scratch line
-# get counted as "cells," and weak-boundary neighbours get merged — the classic failures.
+# get counted as "cells," and weak-boundary neighbours get merged, the classic failures.
 
 # %%
 for t in range(movie.shape[0]):
@@ -91,11 +91,11 @@ for t in range(movie.shape[0]):
 result = SupervisedMetrics().evaluate(pred, truth)
 print(result["aggregate"][["mean_f1", "count_bias", "mean_abs_count_error"]].round(3))
 
-# The TP / FP / FN picture for one frame — green = found, red = missed, blue = invented.
+# The TP / FP / FN picture for one frame, green = found, red = missed, blue = invented.
 viz.compare(pred, truth, frame=0)
 plt.show()
 
 # %% [markdown]
-# **Capture for your write-up:** which failures do you see — over-segmentation (debris /
+# **Capture for your write-up:** which failures do you see, over-segmentation (debris /
 # scratch counted, `count_bias` > 0) or merging (weak boundaries, `count_bias` < 0)? Keep
 # this baseline F1; in Week 3 the deep model has to beat it on the *same* metric.

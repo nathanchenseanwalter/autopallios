@@ -1,6 +1,6 @@
 # Annotate 5 images
 
-> *"Simple annotation — do 5 images. Teach them how to annotate."*
+> *"Simple annotation, do 5 images. Teach them how to annotate."*
 
 A model is only as good as the ground truth you score it against, and that ground truth is
 made by hand. This lesson is about **the format**, which matters more than the tool.
@@ -8,8 +8,8 @@ made by hand. This lesson is about **the format**, which matters more than the t
 ## What a hand label is
 
 A hand annotation is a single `(H, W)` **integer** image: `0` is background, and `1, 2, 3,
-…` are the cells you outlined. That is the *exact* contract the rest of the library already
-consumes — the same `(T, H, W)` masks `SupervisedMetrics` and `iou_matrix` use. There is no
+...` are the cells you outlined. That is the *exact* contract the rest of the library already
+consumes, the same `(T, H, W)` masks `SupervisedMetrics` and `iou_matrix` use. There is no
 new format to invent: a label you draw drops straight into the scoring code.
 
 `autopallios.data.annotations` is the validated load/save layer:
@@ -32,7 +32,7 @@ data/gold/images/<name>.tif    # the raw frame
 data/gold/labels/<name>.tif    # your hand label, (H, W) int
 ```
 
-Keep them tiny — a handful of small crops. Load a pair with
+Keep them tiny, a handful of small crops. Load a pair with
 `annotations.load_gold_pair("<name>")`.
 
 ## Annotating in your tool

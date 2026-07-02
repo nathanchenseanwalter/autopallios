@@ -4,10 +4,10 @@ The big idea
 ------------
 On disk, a "time-series of cells" can look like three *very* different things:
 
-1. a **folder of single-frame images** — our brightfield fibroblasts: each well is
+1. a **folder of single-frame images**, our brightfield fibroblasts: each well is
    one ``.tif`` at a single timepoint, so a series is the *sorted folder*;
-2. a **multipage TIFF** — many frames stacked inside one file;
-3. a **video** (``.avi`` / ``.mp4``) — our Live/Dead assay: one file *is* 53 frames.
+2. a **multipage TIFF**, many frames stacked inside one file;
+3. a **video** (``.avi`` / ``.mp4``), our Live/Dead assay: one file *is* 53 frames.
 
 :class:`ImageSequence` makes all three behave identically: you always get back one
 numpy array shaped ``(T, H, W, C)`` (see :mod:`autopallios._typing`). Grayscale data
@@ -72,7 +72,7 @@ class ImageMetadata:
 
     Carrying provenance (which well? what dtype? how many frames?) means figures
     and the Week-4 validation study can always say *exactly* which data produced a
-    number — essential when comparing against the commercial software.
+    number, essential when comparing against the commercial software.
     """
 
     source_path: Path
@@ -302,7 +302,7 @@ def save_mask_as_tiff(
         The list of written file paths, in frame order.
 
     Note:
-        Labels above 65535 are clipped by the ``uint16`` cast — fine for typical
+        Labels above 65535 are clipped by the ``uint16`` cast, fine for typical
         cell counts; documented here so a surprising max-label is explainable.
     """
     masks = np.asarray(masks)

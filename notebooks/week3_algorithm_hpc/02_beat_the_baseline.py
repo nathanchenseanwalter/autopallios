@@ -46,9 +46,9 @@ try:
     f1_deep = SupervisedMetrics().evaluate(deep, truth)["aggregate"]["mean_f1"].iloc[0]
     print(f"cellpose_sam F1 = {f1_deep:.3f}")
     if f1_deep > f1_baseline:
-        print(f"✅ the deep model beats the baseline by {f1_deep - f1_baseline:+.3f} F1")
+        print(f"the deep model beats the baseline by {f1_deep - f1_baseline:+.3f} F1")
     else:
-        print("the deep model did not win here — try a different channel or scene")
+        print("the deep model did not win here, try a different channel or scene")
 except ImportError:
     print("Install the deep-learning extra to run cellpose_sam (see 01_run_deep_model),")
     print("then the deep F1 should clear the baseline number above.")

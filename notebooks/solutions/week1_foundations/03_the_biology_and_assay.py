@@ -14,11 +14,11 @@
 # # Week 1 · The biology & the assay
 #
 # **Reading:** *Foundations* chapter.
-# **Deliverable:** explain, in your own words, what the assay measures — and find it in the
+# **Deliverable:** explain, in your own words, what the assay measures, and find it in the
 # channels.
 #
-# Our lab images living cells over time. To get science out — how many cells, how big, how
-# fast they move, how many die — every frame must be **segmented** (each cell outlined) and
+# Our lab images living cells over time. To get science out, how many cells, how big, how
+# fast they move, how many die, every frame must be **segmented** (each cell outlined) and
 # **tracked** (followed over time). We work with two kinds of data:
 #
 # - **Brightfield** (the wound-healing / migration assay): grayscale, **1 channel**. Cells
@@ -40,13 +40,13 @@ print("live/dead  (kill curve):", livedead.shape, "-> 3 channels")
 # ## The channels of a Live/Dead frame
 #
 # Channel 0 = all cells (segment on this). Channel 1 = live signal. Channel 2 = dead signal.
-# As cells die, channel 1 fades and channel 2 brightens — that's the whole kill-curve readout.
+# As cells die, channel 1 fades and channel 2 brightens, that's the whole kill-curve readout.
 
 # %%
 import matplotlib.pyplot as plt
 
 last = livedead[-1]  # final frame, (H, W, 3)
-titles = ["channel 0 — all cells (segment here)", "channel 1 — live", "channel 2 — dead"]
+titles = ["channel 0, all cells (segment here)", "channel 1, live", "channel 2, dead"]
 fig, axes = plt.subplots(1, 3, figsize=(11, 4))
 for ax, c, title in zip(axes, range(3), titles):
     ax.imshow(last[:, :, c], cmap="gray")
@@ -57,4 +57,4 @@ plt.show()
 # %% [markdown]
 # **Write it down:** in one or two sentences, what does *your* assay measure, and which
 # channel would you segment on? (For real Live/Dead AVIs, verify the channel order before
-# trusting it — microscopes differ.)
+# trusting it, microscopes differ.)

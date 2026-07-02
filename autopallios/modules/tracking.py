@@ -2,7 +2,7 @@
 
 A segmenter labels cells *within each frame* independently, so "cell 3" in frame 0
 has nothing to do with "cell 3" in frame 1. Tracking fixes that: it follows each
-cell across frames and gives it one ``track_id`` for its whole life — which is what
+cell across frames and gives it one ``track_id`` for its whole life, which is what
 lets us measure migration speed, division, and proliferation.
 
 The default :class:`Tracker` uses dependency-free **nearest-centroid matching with a
@@ -50,7 +50,7 @@ class TrackingResult:
             tracked cell carries its ``track_id`` (consistent across frames). Use
             this for measurement (:mod:`~autopallios.modules.intensity`) and overlays.
         n_tracks: Number of distinct tracks kept.
-        params: Provenance — what settings produced this result.
+        params: Provenance, what settings produced this result.
     """
 
     table: pd.DataFrame
@@ -78,7 +78,7 @@ class Tracker:
         max_distance: Maximum pixels a centroid may move between frames and still be
             considered the same cell (the "gate"). Tune to your magnification.
         backend: ``"nearest"`` (greedy nearest-centroid, default), ``"hungarian"``
-            (optimal assignment via SciPy — no new dependency), or a lazily-imported
+            (optimal assignment via SciPy, no new dependency), or a lazily-imported
             ``"trackpy"`` / ``"btrack"`` / ``"ultrack"``.
         memory: How many frames a cell may disappear (e.g. behind another) and still
             be re-linked when it reappears.
@@ -228,7 +228,7 @@ class Tracker:
 
         Args:
             masks: The per-frame label stack from a :class:`~autopallios.core.segmenter.Segmenter`
-                (the same in-memory array — nothing was written to disk).
+                (the same in-memory array, nothing was written to disk).
 
         Returns:
             A :class:`TrackingResult` carrying the tidy table and a relabeled mask stack.
@@ -256,7 +256,7 @@ class Tracker:
         )
 
     def _link_third_party(self, masks: LabelStack) -> pd.DataFrame:
-        """⭐ STUDENT EXTENSION POINT — adapt a SOTA tracker to the tidy-table schema.
+        """STUDENT EXTENSION POINT, adapt a SOTA tracker to the tidy-table schema.
 
         Each adapter lazily imports its heavy dependency and must return a DataFrame
         with exactly :data:`TABLE_COLUMNS`, so the rest of autopallios never sees a
@@ -289,7 +289,7 @@ class Tracker:
                 }
             )[TABLE_COLUMNS]
         raise NotImplementedError(
-            f"Backend {self.backend!r} is a documented extension point — implement its "
+            f"Backend {self.backend!r} is a documented extension point, implement its "
             f"adapter in Tracker._link_third_party (see the trackpy example)."
         )
 

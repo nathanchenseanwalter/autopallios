@@ -1,4 +1,4 @@
-"""Inline, notebook-friendly visualization — so debugging never needs Fiji.
+"""Inline, notebook-friendly visualization, so debugging never needs Fiji.
 
 Every other module returns *numbers and arrays*. This one turns them back into
 *pictures*, right inside a notebook, with nothing heavier than matplotlib (already in
@@ -9,10 +9,10 @@ were invented (false positives) so the number stops being abstract.
 
 Four helpers, each returning the matplotlib object so you can compose them:
 
-- :func:`show_overlay` — colored instance boundaries over one raw frame.
-- :func:`compare`      — the TP / FP / FN map for one frame (pairs with the Week-2 metrics lesson).
-- :func:`montage`      — a grid of frames (optionally with boundaries) to scan a whole well.
-- :func:`plot_tracks`  — centroid trajectories over time from a tracking result.
+- :func:`show_overlay`, colored instance boundaries over one raw frame.
+- :func:`compare`     , the TP / FP / FN map for one frame (pairs with the Week-2 metrics lesson).
+- :func:`montage`     , a grid of frames (optionally with boundaries) to scan a whole well.
+- :func:`plot_tracks` , centroid trajectories over time from a tracking result.
 
 These follow the same data contracts as the rest of the library
 (:mod:`autopallios._typing`): images are ``(T, H, W, C)`` and masks are ``(T, H, W)``,
@@ -36,9 +36,9 @@ if TYPE_CHECKING:  # pragma: no cover - typing only, not imported at runtime
     from matplotlib.figure import Figure
 
 # Colors for the TP / FP / FN map (kept here so the picture and any legend agree).
-_TP_COLOR = (0.13, 0.69, 0.30)  # green  — true positive (a truth cell we found)
-_FN_COLOR = (0.85, 0.16, 0.16)  # red    — false negative (a truth cell we missed)
-_FP_COLOR = (0.16, 0.36, 0.95)  # blue   — false positive (an object we invented)
+_TP_COLOR = (0.13, 0.69, 0.30)  # green , true positive (a truth cell we found)
+_FN_COLOR = (0.85, 0.16, 0.16)  # red   , false negative (a truth cell we missed)
+_FP_COLOR = (0.16, 0.36, 0.95)  # blue  , false positive (an object we invented)
 
 
 def show_overlay(
@@ -109,7 +109,7 @@ def compare(
     import matplotlib.pyplot as plt
     from matplotlib.patches import Patch
 
-    # Reuse the one matching primitive the whole library shares — never reimplement it.
+    # Reuse the one matching primitive the whole library shares, never reimplement it.
     from .modules._common import greedy_match, iou_matrix
     from .modules.evaluation import SupervisedMetrics
 
@@ -131,9 +131,7 @@ def compare(
     if ax is None:
         _, ax = plt.subplots(figsize=(5, 5))
     ax.imshow(canvas)
-    ax.set_title(
-        f"frame {frame} — TP={row['tp']} FP={row['fp']} FN={row['fn']}  F1={row['f1']:.2f}"
-    )
+    ax.set_title(f"frame {frame}, TP={row['tp']} FP={row['fp']} FN={row['fn']}  F1={row['f1']:.2f}")
     ax.axis("off")
     ax.legend(
         handles=[

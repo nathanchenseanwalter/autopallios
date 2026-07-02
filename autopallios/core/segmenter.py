@@ -1,11 +1,11 @@
-r"""The extensible segmentation wrapper — the one object the rest of autopallios talks to.
+r"""The extensible segmentation wrapper, the one object the rest of autopallios talks to.
 
 You pick a *backend* by name (``"mock"``, ``"baseline"``, ``"cellpose"``, ...) and call
 :meth:`Segmenter.segment`. The heavy model is imported only when you actually use it,
 so ``import autopallios`` stays fast and works with no GPU and nothing extra installed.
 
 ==============================================================================
- PLUG-AND-PLAY MENU — swap the mock for a real state-of-the-art model
+ PLUG-AND-PLAY MENU, swap the mock for a real state-of-the-art model
 ==============================================================================
 A *backend* is any object with a single method ``run(frame_gray) -> labels``. To add
 a model, write one small class with that method and one ``@register_backend("name")``
@@ -14,8 +14,8 @@ line. **That decorator + method is THE place a student plugs in real neural-net 
 ============  ==================  =====================================  ============================
 backend name  install extra       model class / call                     where the weights come from
 ============  ==================  =====================================  ============================
-``mock``      (none)              ``BaselineSegmenter``                  n/a — runs Day 1
-``baseline``  (none)              ``BaselineSegmenter``                  n/a — classic CV
+``mock``      (none)              ``BaselineSegmenter``                  n/a, runs Day 1
+``baseline``  (none)              ``BaselineSegmenter``                  n/a, classic CV
 ``cellpose``  ``dl``              ``cellpose.models.CellposeModel``      ``model_type`` or ``pretrained_model=`` path
 ``cellpose_sam`` ``dl``           ``CellposeModel(model_type="cpsam")``  bundled with cellpose
 ``omnipose``  ``dl``              ``CellposeModel(..., omni=True)``      omnipose weights
@@ -25,7 +25,7 @@ backend name  install extra       model class / call                     where t
 ``splinedist`` ``dl``             ``SplineDist2D``                       model directory
 ============  ==================  =====================================  ============================
 
-Example — add your own model::
+Example, add your own model::
 
     @register_backend("my_unet")
     class MyUNetBackend:
@@ -164,7 +164,7 @@ class CellposeSAMBackend(CellposeBackend):
 
 @register_backend("omnipose")
 class OmniposeBackend(CellposeBackend):
-    """Omnipose — Cellpose with the ``omni`` flag (great for bacteria / elongated cells)."""
+    """Omnipose, Cellpose with the ``omni`` flag (great for bacteria / elongated cells)."""
 
     def __init__(self, model_type: str = "bact_phase_omni", **eval_kwargs):
         super().__init__(model_type=model_type, omni=True, **eval_kwargs)
@@ -209,7 +209,7 @@ class DeepCellBackend:
 
 @register_backend("stardist")
 class StarDistBackend:
-    """StarDist (star-convex shapes — great for nuclei). Install with ``[dl]``."""
+    """StarDist (star-convex shapes, great for nuclei). Install with ``[dl]``."""
 
     def __init__(self, model_name: str = "2D_versatile_fluo", **kwargs):
         self.model_name = model_name
@@ -259,7 +259,7 @@ class Segmenter:
 
     Args:
         model: A registered backend name (see the menu in this module's docstring).
-            Defaults to ``"mock"`` (the classic-CV baseline — runs with no extras).
+            Defaults to ``"mock"`` (the classic-CV baseline, runs with no extras).
         debug: If ``True``, write the resulting mask sequence to disk for inspection.
         output_dir: Where debug masks go (auto-resolved if ``None``; see
             :func:`~autopallios._utils.resolve_debug_dir`).

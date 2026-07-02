@@ -1,7 +1,7 @@
 # Chapter 0 · Setup
 
 Goal: by the end of this page you have the project running on your machine and a green
-check from the test suite — on Day 1, before you understand any internals.
+check from the test suite, on Day 1, before you understand any internals.
 
 ## 1. Get the code
 
@@ -12,7 +12,7 @@ cd autopallios
 
 ## 2. Install the environment with pixi
 
-We use [pixi](https://pixi.sh) so everyone — Mac, Windows, the Linux supercomputer — gets
+We use [pixi](https://pixi.sh) so everyone, Mac, Windows, the Linux supercomputer, gets
 the *same* environment from one file.
 
 ```bash
@@ -34,7 +34,7 @@ This builds the `default` environment: Python 3.13 plus the lightweight scientif
 pixi run demo
 ```
 
-This runs the wound-healing recipe on a **synthetic** cell movie — no real data needed. It
+This runs the wound-healing recipe on a **synthetic** cell movie, no real data needed. It
 segments, tracks, and prints a Temporal Consistency Score, and writes a folder of mask
 TIFFs you can open in Fiji/ImageJ.
 
@@ -68,5 +68,9 @@ for the handful of rules that keep the shared repo tidy.
 | `pixi run docs` | serve this textbook locally |
 | `pixi run -e teach lab` | open the weekly notebooks in JupyterLab |
 | `pixi run build-notebooks` | (mentors) regenerate student notebooks from `solutions/` |
+
+!!! tip "Using AI"
+    AI is welcome for explaining concepts and debugging, but the graded formula blanks must be
+    your own work. See the [notebook README](https://github.com/nathanchenseanwalter/autopallios/blob/main/notebooks/README.md#using-ai-on-this-project).
 
 Next: [Week 1 · Foundations & first look](week1_foundations/index.md).

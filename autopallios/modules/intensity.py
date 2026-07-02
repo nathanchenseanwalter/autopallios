@@ -61,7 +61,7 @@ class IntensityAnalyzer:
             ``["ch0", "ch1", ...]``.
         shape_properties: Which morphology properties to measure.
         compute_integrated: If ``True``, add ``integrated_intensity_<ch> = mean * area``
-            (total fluorescence inside the cell — the standard live/dead readout).
+            (total fluorescence inside the cell, the standard live/dead readout).
 
     Example:
         >>> df = IntensityAnalyzer(channel_names=["dead", "live"]).measure_metrics(
