@@ -6,14 +6,19 @@ cell *fragments*) that students should write themselves, and this tool strips th
 regions down to a ``# TODO`` + ``raise NotImplementedError``, producing the student copy
 under ``notebooks/`` with an identical path tail. Edit the solution, re-run this, done.
 
-Every notebook ships in two formats, kept in sync by this tool:
+The one source of truth is the **solution** ``.py`` (percent format: clean diffs, lintable,
+what mentors review). From it this tool generates, for each notebook:
 
-* the percent-format ``.py`` — the source of truth (clean diffs, lintable, code review);
-* a committed ``.ipynb`` twin — what students open in JupyterLab, and what GitHub renders.
+* a student ``.ipynb`` — what students open and work in (outputs stripped, exercises blanked);
+* a student ``.py`` — a runnable, ``main()``-wrapped *script* twin of that notebook (see
+  :func:`percent_to_script`): after a student solves the notebook they paste their code into
+  the matching blank here and ``python NN_name.py`` runs the whole lesson headless — the
+  bridge from "explore in a notebook" to "automate as a script";
+* a solution ``.ipynb`` — the worked answer key, rendered beside the solution source.
 
-The ``.ipynb`` is generated from the ``.py`` (outputs stripped, deterministic cell ids), so
-a fresh clone has working notebooks with no conversion step. Students still convert by hand
-as an exercise, but nobody has to before they can open a notebook.
+Both ``.ipynb`` files are generated (outputs stripped, deterministic cell ids), so a fresh
+clone has working notebooks with no conversion step. Students still convert by hand as an
+exercise, but nobody has to before they can open a notebook.
 
 Two ways to mark an exercise inside a solution ``.py``:
 
@@ -51,6 +56,7 @@ alternative, overkill for one repo shared by six students, so we don't use it.)
 from __future__ import annotations
 
 import argparse
+import ast
 import sys
 from pathlib import Path
 
@@ -185,17 +191,255 @@ def percent_to_ipynb(py_text: str) -> str:
     return text if text.endswith("\n") else text + "\n"
 
 
+_NOQA_E402 = "# noqa: E402"
+
+
+def _build_docstring(md_source: str, stem: str) -> str:
+    """Turn a notebook's opening markdown cell into a module docstring.
+
+    The markdown H1 becomes the summary line (tagged as the script twin of the notebook)
+    and the remaining prose becomes the body. A raw string is used when the text contains
+    backslashes (LaTeX like ``\\frac``) so they survive verbatim without escape warnings.
+
+    Args:
+        md_source: The first markdown cell's source (jupytext-decoded, no ``# `` prefixes).
+        stem: The notebook's file stem, e.g. ``03_implement_iou``.
+
+    Returns:
+        A complete triple-quoted docstring literal (its own line(s) of source).
+    """
+    lines = md_source.splitlines()
+    if lines and lines[0].lstrip().startswith("#"):
+        title = lines[0].lstrip("#").strip()
+        rest = "\n".join(lines[1:]).strip("\n")
+    else:
+        title = stem
+        rest = md_source.strip("\n")
+    summary = f"{title} — runnable-script twin of {stem}.ipynb."
+    body = summary if not rest.strip() else f"{summary}\n\n{rest}\n"
+    if '"""' not in body and not body.endswith("\\"):
+        prefix = "r" if "\\" in body else ""
+        return f'{prefix}"""{body}"""'
+    escaped = body.replace("\\", "\\\\").replace('"""', r"\"\"\"")
+    return f'"""{escaped}"""'
+
+
+def _md_to_comment(md_source: str) -> list[str]:
+    """Render a markdown cell as Python comment lines (blank lines kept as bare ``#``)."""
+    return ["#" if not line.strip() else f"# {line}" for line in md_source.strip("\n").splitlines()]
+
+
+def _strip_blank_edges(lines: list[str]) -> list[str]:
+    """Drop leading/trailing blank lines from a block, keeping internal spacing."""
+    start, end = 0, len(lines)
+    while start < end and not lines[start].strip():
+        start += 1
+    while end > start and not lines[end - 1].strip():
+        end -= 1
+    return lines[start:end]
+
+
+def _import_top_module(line: str) -> str:
+    """Return the top-level module name an ``import`` line refers to (``''`` if not one)."""
+    line = line.strip()
+    if line.startswith("from "):
+        module = line[len("from ") :].split(" import", 1)[0].strip()
+    elif line.startswith("import "):
+        module = line[len("import ") :].split(",", 1)[0].strip().split(" as ", 1)[0].strip()
+    else:
+        return ""
+    return "autopallios" if module.startswith(".") else module.split(".")[0]
+
+
+def _sort_imports(lines: list[str]) -> list[str]:
+    """Group imports (future, stdlib, third-party, first-party) and sort within each group.
+
+    Uses :data:`sys.stdlib_module_names` to tell stdlib from third-party, so the hoisted
+    imports read like a normal, isort-style script header (blank line between groups).
+    """
+    groups: dict[int, list[str]] = {0: [], 1: [], 2: [], 3: []}
+    for line in lines:
+        top = _import_top_module(line)
+        if top == "__future__":
+            groups[0].append(line)
+        elif top in sys.stdlib_module_names:
+            groups[1].append(line)
+        elif top == "autopallios":
+            groups[3].append(line)
+        else:
+            groups[2].append(line)
+    out: list[str] = []
+    for key in (0, 1, 2, 3):
+        if groups[key]:
+            if out:
+                out.append("")
+            out += sorted(groups[key], key=lambda s: (_import_top_module(s).lower(), s.lower()))
+    return out
+
+
+def _is_def(node: ast.AST) -> bool:
+    """True for a top-level function/class definition (kept at module scope in the script)."""
+    return isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
+
+
+def _is_import(node: ast.AST) -> bool:
+    """True for a top-level ``import`` / ``from ... import`` statement (hoisted to the top)."""
+    return isinstance(node, (ast.Import, ast.ImportFrom))
+
+
+def percent_to_script(py_text: str, *, stem: str) -> str:
+    """Render exercise-stripped percent text as a runnable, ``main()``-wrapped script.
+
+    This is the *automation* twin of a notebook: the opening markdown becomes the module
+    docstring, imports are hoisted to the top, top-level ``def``\\s stay at module scope
+    (so a student pastes their notebook function straight in), every other statement moves
+    into ``main()``, and each ``plt.show()`` becomes a ``savefig`` into ``output/`` — the
+    concrete "a script saves its results instead of popping a window" lesson. Section
+    markdown is preserved as comments above the code it introduced.
+
+    Args:
+        py_text: Percent-format source, already exercise-stripped for students.
+        stem: The notebook's file stem, used for the docstring and figure filenames.
+
+    Returns:
+        The script text, newline-terminated and deterministic (safe for ``--check``).
+
+    Raises:
+        SystemExit: If jupytext is not importable (run under a pixi env).
+    """
+    try:
+        import jupytext
+    except ModuleNotFoundError as exc:  # pragma: no cover - environment guard
+        raise SystemExit(
+            f"build-notebooks needs '{exc.name}' to render script twins. "
+            "Run it through pixi, e.g. `pixi run build-notebooks`."
+        ) from exc
+
+    cells = jupytext.reads(py_text, fmt="py:percent").cells
+
+    imports: list[str] = []
+    seen_imports: set[str] = set()
+    module_blocks: list[list[str]] = []
+    main_blocks: list[list[str]] = []
+    pending_md: list[str] = []
+    docstring: str | None = None
+    state = {"figs": 0, "needs_output": False}
+
+    def add_import(line: str) -> None:
+        line = line.replace(f"  {_NOQA_E402}", "").replace(f" {_NOQA_E402}", "").rstrip()
+        key = line.strip()
+        if key and key not in seen_imports:
+            seen_imports.add(key)
+            imports.append(line)
+
+    def convert_shows(lines: list[str]) -> list[str]:
+        out: list[str] = []
+        for line in lines:
+            if line.strip() == "plt.show()":
+                indent = line[: len(line) - len(line.lstrip())]
+                state["figs"] += 1
+                state["needs_output"] = True
+                name = f"{stem}_fig{state['figs']}.png"
+                out.append(f'{indent}plt.savefig(OUTPUT_DIR / "{name}", dpi=150, bbox_inches="tight")')
+                out.append(f"{indent}plt.close()")
+            else:
+                out.append(line)
+        return out
+
+    def indent4(lines: list[str]) -> list[str]:
+        return [f"    {line}" if line.strip() else "" for line in lines]
+
+    for idx, cell in enumerate(cells):
+        if cell.cell_type == "markdown":
+            if docstring is None and idx == 0:
+                docstring = _build_docstring(cell.source, stem)
+            else:
+                block = _md_to_comment(cell.source)
+                if block:
+                    pending_md = pending_md + ["#"] + block if pending_md else block
+            continue
+
+        src_lines = cell.source.splitlines()
+        try:
+            body = ast.parse(cell.source).body
+        except SyntaxError:  # pragma: no cover - notebooks are valid Python
+            block = indent4(convert_shows(src_lines))
+            main_blocks.append(indent4(pending_md) + block if pending_md else block)
+            pending_md = []
+            continue
+        if not body:
+            if src_lines:
+                main_blocks.append(indent4(pending_md + src_lines) if pending_md else indent4(src_lines))
+                pending_md = []
+            continue
+
+        # A cell's defs stay at module scope; everything else moves into main(). Accumulate
+        # per cell (not per statement) so the notebook's own line grouping is preserved.
+        primary = "module" if any(_is_def(n) for n in body) else "main"
+        cell_module: list[str] = []
+        cell_main: list[str] = []
+        for i, node in enumerate(body):
+            start = 1 if i == 0 else body[i - 1].end_lineno + 1
+            end = node.end_lineno if i < len(body) - 1 else len(src_lines)
+            chunk = src_lines[start - 1 : end]
+            if _is_import(node):
+                for line in src_lines[node.lineno - 1 : node.end_lineno]:
+                    add_import(line)
+            elif _is_def(node):
+                cell_module += convert_shows(chunk)
+            else:
+                cell_main += convert_shows(chunk)
+
+        cell_module = _strip_blank_edges(cell_module)
+        cell_main = _strip_blank_edges(cell_main)
+        if primary == "module" and pending_md:
+            cell_module = pending_md + cell_module
+        elif pending_md:  # goes into main(), so comment and code are indented together
+            cell_main = pending_md + cell_main
+        if cell_module:
+            module_blocks.append(cell_module)
+        if cell_main:
+            main_blocks.append(indent4(cell_main))
+        pending_md = []
+
+    out: list[str] = []
+    if docstring:
+        out += [docstring, ""]
+    if state["needs_output"] and "from pathlib import Path" not in seen_imports:
+        imports.append("from pathlib import Path")
+    out += _sort_imports(imports)
+    if state["needs_output"]:
+        out += ["", 'OUTPUT_DIR = Path(__file__).resolve().parent / "output"']
+    for block in module_blocks:
+        out += ["", ""] + block
+    out += ["", "", "def main() -> None:"]
+    out.append('    """Run this lesson end to end — the notebook, as an automatable script."""')
+    if state["needs_output"]:
+        out.append("    OUTPUT_DIR.mkdir(exist_ok=True)")
+    body_lines: list[str] = []
+    for i, block in enumerate(main_blocks):
+        if i:
+            body_lines.append("")
+        body_lines += block
+    out += body_lines if any(line.strip() for line in body_lines) else ["    pass"]
+    if pending_md:  # a closing markdown cell (e.g. "Next: ...") with no code after it
+        out += ["", ""] + pending_md
+    out += ["", "", 'if __name__ == "__main__":', "    main()"]
+    return "\n".join(out).rstrip("\n") + "\n"
+
+
 def _artifacts_for(solution: Path, solutions_dir: Path, out_dir: Path) -> dict[Path, str]:
     """Compute every generated file for one solution ``.py`` as ``{dest: content}``.
 
-    Produces the student ``.py`` (exercises blanked), the student ``.ipynb`` twin, and the
+    Produces the student ``.py`` (a runnable, ``main()``-wrapped *script* twin with the
+    exercises blanked), the student ``.ipynb`` twin (the notebook students work in), and the
     solution ``.ipynb`` twin (rendered in place beside the solution source).
     """
     rel = solution.relative_to(solutions_dir)
     source = solution.read_text(encoding="utf-8")
     student_py = strip_exercises(source)
     return {
-        out_dir / rel: student_py,
+        out_dir / rel: percent_to_script(student_py, stem=rel.stem),
         (out_dir / rel).with_suffix(".ipynb"): percent_to_ipynb(student_py),
         solution.with_suffix(".ipynb"): percent_to_ipynb(_untag_exercise_headers(source)),
     }
