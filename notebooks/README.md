@@ -9,26 +9,30 @@ understanding: each week is a set of notebooks that runs top to bottom and print
 pixi run -e teach lab        # opens JupyterLab on this folder
 ```
 
-Every notebook is committed in **two formats**:
+Every notebook comes as **two files that share a name**:
 
 - **`.ipynb`** — the notebook you open and run in JupyterLab, straight from a fresh
-  `git clone` with no conversion step.
-- **`.py`** (percent format) — the same notebook as a plain script: clean diffs, lintable,
-  and what mentors review. This is the **source of truth**.
+  `git clone`. **This is where you do the work.**
+- **`.py`** — a **runnable-script twin** of that notebook: the same steps, written the way
+  you'd *automate* them. `python 03_implement_iou.py` runs the whole lesson in one shot
+  (headless) and **saves its figures to `output/`** instead of drawing them inline. After
+  you solve a notebook, paste your code into the matching blank in the `.py` and run it —
+  that's the leap from *poking at cells* to a script you can schedule, drop in a recipe, or
+  send to the supercomputer.
 
-`pixi run build-notebooks` rebuilds each `.ipynb` from its `.py` (outputs stripped); editing
-a notebook in JupyterLab syncs the pair back the other way through jupytext. **Commit both.**
+Both files are **generated** from one source of truth — the mentor's worked solution under
+`notebooks/solutions/<week>/` (a percent-format `.py`). Don't hand-edit the generated files;
+`pixi run build-notebooks` rebuilds them (see *For mentors*). **Commit both.**
 
-### Convert between the two yourself
+### From notebook to script, by hand
 
-Learn to do this by hand as well, it's how a notebook becomes a script other code can
-import. The commands:
+Turning a notebook into an automatable script is a real skill — and the committed `.py`
+twin is that, done for you. To watch it happen by hand, convert into a *scratch* file so you
+never clobber the generated twin:
 
 ```bash
-jupytext --to py:percent 03_implement_iou.ipynb    # notebook -> script
-jupytext --to notebook   03_implement_iou.py       # script   -> notebook
-jupyter nbconvert --to script 03_implement_iou.ipynb   # the nbconvert way (-> .py)
-jupytext --sync          03_implement_iou.ipynb    # update whichever twin is stale
+jupyter nbconvert --to script 03_implement_iou.ipynb --stdout    # notebook -> script text
+jupytext --to py:percent      03_implement_iou.ipynb -o /tmp/nb.py  # the percent-cell form
 ```
 
 It's also the first move in promoting a notebook function into the shared, tested library,
@@ -48,7 +52,8 @@ cp notebooks/week2_annotate_cv_eval/03_implement_iou.ipynb \
 Some cells are blanked for you to implement (a `# TODO` and a `raise NotImplementedError`).
 Fill them in; the **grader cell** right after imports the real library function and checks
 your version against it. Green = correct. That is the whole loop: implement in a cell →
-match the library → move on.
+match the library → move on. The `.py` twin carries the *same* blank — paste your finished
+cell there and `python NN_name.py` runs the lesson end to end.
 
 ## Using AI on this project
 
@@ -82,8 +87,10 @@ pixi run build-notebooks            # regenerate student .py + all .ipynb twins 
 pixi run build-notebooks --check    # CI: fail if any generated notebook is stale
 ```
 
-That one command writes the student `.py`, the student `.ipynb`, and the solution `.ipynb`
-(all output-stripped and deterministic). You only ever hand-edit the solution `.py`.
+That one command writes the student **runnable-script** `.py`, the student `.ipynb`, and the
+solution `.ipynb` (all output-stripped and deterministic). You only ever hand-edit the
+solution `.py`. One authoring tip: **end a figure cell with `plt.show()`** — the notebook
+renders it inline, and the script twin turns that line into a `savefig` into `output/`.
 
 See [`tools/make_student_version.py`](../tools/make_student_version.py) for the marker
-syntax.
+syntax and the notebook→script renderer (`percent_to_script`).

@@ -7,6 +7,13 @@ green against the grader. Six of you each wrote your own copy. That's perfect fo
 *learning*, and wrong for a *tool*: six copies drift, none are tested, and a recipe can't
 `import` a notebook cell. This page is the one lesson on closing that gap.
 
+The first rung is already under your hands. Every notebook ships a **runnable script twin**
+(`NN_name.py` next to the `.ipynb`): paste in the cell you wrote, and `python NN_name.py`
+runs the whole lesson headless, saving its figures instead of drawing them inline. That is
+the leap from *clicking cells* to code that **runs without you**, the thing a cron job, a
+recipe, or a Slurm array actually calls. The rest of this page is the next rungs: turning
+that proven function into shared, tested library code.
+
 ## The three states of a piece of code
 
 1. **A cell**, fast to write, yours alone, dies when the kernel restarts.

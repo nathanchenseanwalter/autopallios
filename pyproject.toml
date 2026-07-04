@@ -36,13 +36,18 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Deep learning libraries
-dl = [
-    "torch",
-    "cellpose",
-    # CellSAM is GitHub-only (not on PyPI). Add it explicitly when you want that backend:
-    #   pip install "git+https://github.com/vanvalenlab/cellSAM.git"
+# Notebook libraries
+notebook = [
+    "pip",
+    "ipykernel",
+    "ipywidgets",
 ]
+# Deep-learning backends. Under pixi these come from conda-forge (see
+# [tool.pixi.feature.dl.dependencies] below) so exactly one OpenMP runtime is linked — PyPI
+# torch/cellpose bundle a second libomp and abort with "OMP: Error #15" alongside conda's
+# llvm-openmp on macOS. Kept empty so pixi's auto-generated `dl` feature adds no PyPI torch.
+#   CellSAM is GitHub-only: pip install "git+https://github.com/vanvalenlab/cellSAM.git"
+dl = []
 # Production tracking engines (the default nearest-centroid tracker needs none of these).
 tracking = [
     "trackpy",
@@ -101,12 +106,12 @@ convention = "google"
 testpaths = ["tests"]
 addopts = "-q"
 
-[tool.jupytext]
-# Notebooks are authored as percent-format .py (clean diffs, lintable, reviewable); the
-# .ipynb twin is generated and committed by `pixi run build-notebooks` (outputs stripped),
-# so a fresh clone already has them. This pairing also lets JupyterLab keep the two in
-# sync when you edit a notebook interactively — the .py stays the source of truth.
-formats = "ipynb,py:percent"
+# NOTE: jupytext notebook/script pairing is intentionally OFF (no `[tool.jupytext] formats`).
+# The one source of truth is the solution `.py` under notebooks/solutions/ (percent format);
+# `pixi run build-notebooks` (tools/make_student_version.py) generates the committed .ipynb
+# twins AND each notebook's sibling .py as a *runnable script* (main()-wrapped), not a percent
+# twin — so auto-pairing would clobber the script on the next JupyterLab save. jupytext is
+# still used by the build tool itself to parse the percent source and render the .ipynb.
 
 [tool.pixi.workspace]
 channels = ["conda-forge"]
@@ -127,6 +132,13 @@ nbformat = "*"
 # made the package importable — which broke `pixi run demo` and `pixi run -e dev test`.
 [tool.pixi.pypi-dependencies]
 autopallios = { path = ".", editable = true }
+
+# Deep-learning stack from conda-forge (CPU/MPS on osx-arm64, CPU on linux-64), sourced here
+# rather than from the PyPI `dl` extra so exactly one OpenMP runtime is linked — the PyPI
+# torch+cellpose combo triggers "OMP: Error #15" on macOS. The gpu feature below pins CUDA.
+[tool.pixi.feature.dl.dependencies]
+pytorch = ">=2.2"
+cellpose = "*"
 
 [tool.pixi.feature.gpu]
 platforms = ["linux-64"]

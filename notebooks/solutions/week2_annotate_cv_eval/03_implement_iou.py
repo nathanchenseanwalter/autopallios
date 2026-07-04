@@ -81,6 +81,8 @@ print(f"your IoU matches the library: {mine:.3f}")
 # were found, red were missed (false negatives), blue were invented (false positives).
 
 # %%
+import matplotlib.pyplot as plt  # noqa: E402
+
 from autopallios import viz  # noqa: E402
 from autopallios.core.baseline import BaselineSegmenter  # noqa: E402
 from autopallios.data import synthetic  # noqa: E402
@@ -95,6 +97,7 @@ agg = SupervisedMetrics().evaluate(pred, truth)["aggregate"]
 print(agg[["mean_f1", "count_bias"]].round(3))
 
 viz.compare(pred, truth, frame=0)
+plt.show()
 
 # %% [markdown]
 # **Next:** in `04_precision_recall_f1` you turn matched/unmatched cells (TP/FP/FN) into

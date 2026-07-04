@@ -84,12 +84,15 @@ print(f"your precision/recall/F1 match the library: P={p:.2f} R={r:.2f} F1={f:.2
 # (debris/scratch counted as cells), **negative** = it merges cells (weak boundaries).
 
 # %%
+import matplotlib.pyplot as plt
+
 from autopallios import viz
 
 agg = SupervisedMetrics().evaluate(pred, truth)["aggregate"]
 print(agg[["mean_f1", "count_bias", "mean_abs_count_error"]].round(3))
 
 viz.compare(pred, truth, frame=0)
+plt.show()
 
 # %% [markdown]
 # **Interpret it:** is your `count_bias` positive or negative? Which failure is your

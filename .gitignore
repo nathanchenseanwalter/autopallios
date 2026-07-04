@@ -229,9 +229,10 @@ MENTORS_PRIVATE.md
 recipes/**/output/*
 !recipes/**/output/.gitkeep
 
-# Notebooks are committed in two formats, kept in sync by `pixi run build-notebooks`: the
-# percent-format .py (source of truth) and its generated, output-stripped .ipynb twin.
-# Only Jupyter's checkpoint cruft (ignored globally above) and student run outputs stay out of git.
+# Notebooks: the one source of truth is the solution .py (percent) under solutions/. From it
+# `pixi run build-notebooks` generates the committed student .ipynb, the student runnable .py
+# script twin, and the solution .ipynb. Running a script saves its figures into
+# notebooks/<week>/output/, which is git-ignored (the .gitkeep keeps the folder on a fresh clone).
 notebooks/**/output/*
 !notebooks/**/output/.gitkeep
 
@@ -256,3 +257,6 @@ site/
 # macOS finder cruft.
 .DS_Store
 **/.DS_Store
+# pixi environments
+.pixi/*
+!.pixi/config.toml

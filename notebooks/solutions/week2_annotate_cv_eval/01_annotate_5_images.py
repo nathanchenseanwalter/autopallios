@@ -26,6 +26,7 @@
 # `autopallios.data.annotations` is the validated load/save layer for these files.
 
 # %%
+import matplotlib.pyplot as plt
 import numpy as np
 
 from autopallios import viz
@@ -49,6 +50,7 @@ print("cell ids in frame 0:", np.unique(frame0_label))  # 0 (background) + one i
 
 validate_annotation(frame0_label, image=movie[0])  # raises if it breaks the contract
 viz.show_overlay(movie, example_label, frame=0, title="a hand label = colored cell outlines")
+plt.show()
 
 # %% [markdown]
 # ## Annotating in your tool (recorded tutorial)
